@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Compilation et tests (macOS)
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Outils
+        run: |
+          sw_vers
+          xcodebuild -version
+          swift --version
+
+      - name: Compilation (release)
+        run: swift build -c release 2>&1 | tee build.log; exit ${PIPESTATUS[0]}
+
+      - name: Tests
+        run: swift test 2>&1 | tee test.log; exit ${PIPESTATUS[0]}
+
+      - name: Avertissements
+        if: always()
+        run: grep -h "warning:" build.log test.log | sort -u | head -100 || true
+
+      - name: Assemblage de l'app (signature ad-hoc)
+        run: |
+          SIGN_ID=- ./build.sh
+          ditto -c -k --keepParent "build/Déclic.app" Declic-ci.zip
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: declic-ci
+          path: |
+            build.log
+            test.log
+            Declic-ci.zip
+          if-no-files-found: ignore

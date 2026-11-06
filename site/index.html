@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Déclic — captures d'écran pour Mac</title>
+<meta name="description" content="Capture, annote, partage — en un déclic. Captures d'écran, capture défilante, vidéo et GIF pour Mac. Gratuit et open source.">
+<link rel="icon" href="favicon.png">
+<meta property="og:title" content="Déclic — captures d'écran pour Mac">
+<meta property="og:description" content="Capture, annote, partage — en un déclic.">
+<meta property="og:image" content="icon.png">
+<style>
+  :root {
+    --coral: #FF5B3A; --apricot: #FF8A3D; --raspberry: #E8344E;
+    --ink: #16151D; --ink-2: #4A4857; --paper: #FBF7F2; --line: rgba(22,21,29,.08);
+    --grad: linear-gradient(135deg, var(--apricot), var(--coral) 55%, var(--raspberry));
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font: 17px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 700 21px/1 ui-rounded, "SF Pro Rounded", -apple-system, sans-serif; text-decoration: none; }
+  .brand img { width: 34px; height: 34px; }
+  nav .links { display: flex; gap: 26px; font-size: 14px; color: var(--ink-2); }
+  nav .links a { text-decoration: none; }
+  nav .links a:hover { color: var(--coral); }
+
+  .hero { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; padding: 56px 0 80px; }
+  .eyebrow { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+             color: var(--coral); background: rgba(255,91,58,.1); padding: 6px 12px; border-radius: 99px; margin-bottom: 22px; }
+  h1 { font: 800 clamp(40px, 6vw, 64px)/1.04 -apple-system, "SF Pro Display", sans-serif; letter-spacing: -.03em; margin-bottom: 22px; }
+  h1 span { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { font-size: 21px; color: var(--ink-2); max-width: 30em; margin-bottom: 34px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 15px 26px; border-radius: 14px; font-weight: 650;
+         text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
+  .btn-primary { background: var(--grad); color: #fff; box-shadow: 0 8px 20px -10px rgba(22,21,29,.35); }
+  .btn-primary:hover { transform: translateY(-2px); }
+  .btn-ghost { border: 1px solid var(--line); background: #fff; }
+  .btn-ghost:hover { border-color: rgba(255,91,58,.4); }
+  .small { font-size: 14px; color: var(--ink-2); }
+
+  .shot { position: relative; aspect-ratio: 1 / 1; display: grid; place-items: center; }
+  .shot::before { content: ""; position: absolute; inset: 8%; border-radius: 40%; background: var(--grad); filter: blur(70px); opacity: .35; }
+  .shot img { position: relative; width: 78%; filter: drop-shadow(0 30px 40px rgba(90,16,32,.25)); }
+
+  section { padding: 70px 0; }
+  h2 { font: 750 clamp(28px, 4vw, 40px)/1.15 -apple-system, "SF Pro Display", sans-serif; letter-spacing: -.02em; margin-bottom: 14px; }
+  .sub { color: var(--ink-2); max-width: 36em; margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 26px; }
+  .card svg { width: 42px; height: 42px; margin-bottom: 16px; }
+  .card h3 { font-size: 21px; margin-bottom: 6px; }
+  .card p { color: var(--ink-2); font-size: 16px; }
+
+  .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .key { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fff;
+         border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; font-size: 16px; }
+  kbd { font: 600 14px/1 ui-monospace, "SF Mono", monospace; background: var(--paper); border: 1px solid var(--line);
+        border-bottom-width: 2px; border-radius: 7px; padding: 6px 9px; white-space: nowrap; }
+
+  .promise { background: var(--ink); color: #fff; border-radius: 28px; padding: 54px; display: grid;
+             grid-template-columns: repeat(3, 1fr); gap: 34px; }
+  .promise h3 { font-size: 21px; margin-bottom: 8px; }
+  .promise h3::before { content: ""; display: block; width: 34px; height: 4px; border-radius: 4px; background: var(--grad); margin-bottom: 16px; }
+  .promise p { color: rgba(255,255,255,.72); font-size: 16px; }
+
+  .final { text-align: center; padding: 90px 0 70px; }
+  .final img { width: 96px; margin-bottom: 20px; }
+  .final .cta { justify-content: center; margin-top: 28px; }
+  footer { border-top: 1px solid var(--line); padding: 28px 0 40px; font-size: 14px; color: var(--ink-2);
+           display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; padding-top: 24px; }
+    .shot { max-width: 360px; margin: 0 auto; }
+    .grid, .promise { grid-template-columns: 1fr; }
+    .promise { padding: 34px; }
+    nav .links { display: none; }
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #F3F0EC; --ink-2: #A9A6B4; --paper: #121118; --line: rgba(255,255,255,.09); }
+    .card, .key, .btn-ghost { background: #1B1A23; }
+    kbd { background: #121118; }
+    .promise { background: #1B1A23; border: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#"><img src="icon.png" alt="">Déclic</a>
+    <div class="links">
+      <a href="#fonctions">Fonctions</a>
+      <a href="#raccourcis">Raccourcis</a>
+      <a href="https://github.com/Lightmaster00/declic">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <span class="eyebrow">Gratuit · Open source · macOS 14+</span>
+      <h1>Capture, annote, partage — <span>en un déclic.</span></h1>
+      <p class="lead">Captures d'écran, pages entières qui défilent, vidéos et GIF. Une app Mac native et rapide,
+        gratuite et open source — rien ne quitte ton Mac.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/Lightmaster00/declic/releases/latest">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6M5 21h14"/></svg>
+          Télécharger pour Mac
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/Lightmaster00/declic">Code source</a>
+      </div>
+    </div>
+    <div class="shot"><img src="icon.png" alt="Icône de Déclic"></div>
+  </header>
+</div>
+
+<section id="fonctions">
+  <div class="wrap">
+    <h2>Tout ce qu'il faut, rien de plus.</h2>
+    <p class="sub">Un raccourci, et ta capture est prête à coller, à annoter ou à envoyer.</p>
+    <div class="grid">
+      <div class="card">
+        <svg viewBox="0 0 42 42"><rect width="42" height="42" rx="11" fill="#FF5B3A" opacity=".12"/><path d="M12 17v-3a2 2 0 0 1 2-2h3M25 12h3a2 2 0 0 1 2 2v3M30 25v3a2 2 0 0 1-2 2h-3M17 30h-3a2 2 0 0 1-2-2v-3" fill="none" stroke="#FF5B3A" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <h3>Zone, fenêtre, écran</h3>
+        <p>Trace une zone au pixel près avec la loupe, ou choisis une fenêtre parmi toutes celles ouvertes.</p>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 42 42"><rect width="42" height="42" rx="11" fill="#FF5B3A" opacity=".12"/><rect x="14" y="10" width="14" height="22" rx="3" fill="none" stroke="#FF5B3A" stroke-width="2.4"/><path d="M21 15v9m-3-3 3 3 3-3" fill="none" stroke="#FF5B3A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h3>Capture défilante</h3>
+        <p>Une conversation, une page web, un e-mail entier : fais défiler, Déclic assemble tout en une image.</p>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 42 42"><rect width="42" height="42" rx="11" fill="#FF5B3A" opacity=".12"/><circle cx="21" cy="21" r="9" fill="none" stroke="#FF5B3A" stroke-width="2.4"/><circle cx="21" cy="21" r="4" fill="#FF5B3A"/></svg>
+        <h3>Vidéo et GIF</h3>
+        <p>Enregistre une zone, l'écran ou une app, avec le pointeur et les clics. Exporte en MP4 ou en GIF.</p>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 42 42"><rect width="42" height="42" rx="11" fill="#FF5B3A" opacity=".12"/><path d="M12 30l4-1 12-12-3-3-12 12-1 4zM24 13l3-3 3 3-3 3" fill="none" stroke="#FF5B3A" stroke-width="2.4" stroke-linejoin="round"/></svg>
+        <h3>Annotations</h3>
+        <p>Flèches, formes, texte, surligneur, flou, numéros et recadrage. Zoom au trackpad pour le détail.</p>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 42 42"><rect width="42" height="42" rx="11" fill="#FF5B3A" opacity=".12"/><rect x="10" y="20" width="16" height="12" rx="3" fill="none" stroke="#FF5B3A" stroke-width="2.4"/><path d="M16 15h13a3 3 0 0 1 3 3v8" fill="none" stroke="#FF5B3A" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <h3>Accès rapide</h3>
+        <p>Chaque capture attend dans un coin : copie, enregistre, glisse-la dans n'importe quelle app, ou garde-la.</p>
+      </div>
+      <div class="card">
+        <svg viewBox="0 0 42 42"><rect width="42" height="42" rx="11" fill="#FF5B3A" opacity=".12"/><circle cx="21" cy="21" r="10" fill="none" stroke="#FF5B3A" stroke-width="2.4"/><path d="M21 15v6l4 3" fill="none" stroke="#FF5B3A" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <h3>Historique</h3>
+        <p>Retrouve toutes tes captures et vidéos récentes, même celles que tu n'as pas enregistrées.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="raccourcis">
+  <div class="wrap">
+    <h2>Tout au clavier.</h2>
+    <p class="sub">Les raccourcis se changent dans les réglages.</p>
+    <div class="keys">
+      <div class="key">Zone <kbd>⌥ ⇧ 4</kbd></div>
+      <div class="key">Plein écran <kbd>⌥ ⇧ 3</kbd></div>
+      <div class="key">Fenêtre <kbd>⌥ ⇧ 5</kbd></div>
+      <div class="key">Défilante <kbd>⌥ ⇧ 8</kbd></div>
+      <div class="key">Enregistrement <kbd>⌥ ⇧ 6</kbd></div>
+      <div class="key">Historique <kbd>⌥ ⇧ H</kbd></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="promise">
+      <div><h3>Rapide</h3><p>Une app native, légère, qui démarre instantanément et reste discrète dans la barre des menus.</p></div>
+      <div><h3>Libre</h3><p>Gratuit et open source (licence MIT). Pas de compte, pas de cloud : tes captures restent sur ton Mac.</p></div>
+      <div><h3>Toujours à jour</h3><p>Les nouvelles versions te sont proposées automatiquement, en un clic.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="final">
+    <img src="icon.png" alt="">
+    <h2>Prêt pour le déclic ?</h2>
+    <p class="sub" style="margin: 0 auto">Gratuit, pour macOS 14 Sonoma ou plus récent. Si macOS bloque l'app au premier lancement :
+      <em>Réglages Système › Confidentialité et sécurité › Ouvrir quand même</em>.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/Lightmaster00/declic/releases/latest">Télécharger pour Mac</a>
+    </div>
+  </div>
+  <footer>
+    <span>© 2026 Déclic</span>
+    <span>Fait en France · <a href="https://github.com/Lightmaster00/declic">Open source (MIT)</a></span>
+  </footer>
+</div>
+</body>
+</html>
