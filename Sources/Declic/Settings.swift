@@ -2,7 +2,7 @@ import AppKit
 import ServiceManagement
 import SwiftUI
 
-// MARK: - Fenêtre de réglages (onglets dans la barre d'outils)
+// MARK: - Settings window (tabs in the toolbar)
 
 @MainActor
 final class SettingsWindowController: NSWindowController {
@@ -43,7 +43,7 @@ final class SettingsWindowController: NSWindowController {
     }
 }
 
-// MARK: - Général
+// MARK: - General
 
 @MainActor
 struct GeneralSettings: View {
@@ -209,7 +209,7 @@ struct CaptureSettings: View {
     }
 }
 
-// MARK: - Accès rapide
+// MARK: - Quick Access
 
 @MainActor
 struct QuickAccessSettings: View {
@@ -251,7 +251,7 @@ struct QuickAccessSettings: View {
     }
 }
 
-// MARK: - Enregistrement
+// MARK: - Recording
 
 @MainActor
 struct RecordingSettings: View {
@@ -311,7 +311,7 @@ struct RecordingSettings: View {
     }
 }
 
-// MARK: - Raccourcis
+// MARK: - Shortcuts
 
 @MainActor
 struct ShortcutSettings: View {
@@ -340,7 +340,7 @@ struct ShortcutSettings: View {
     }
 }
 
-// MARK: - Historique
+// MARK: - History
 
 @MainActor
 struct HistorySettings: View {
@@ -378,7 +378,7 @@ struct HistorySettings: View {
     }
 }
 
-// MARK: - À propos
+// MARK: - About
 
 @MainActor
 struct AboutSettings: View {

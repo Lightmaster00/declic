@@ -1,6 +1,6 @@
 import Foundation
 
-/// Langue de l'interface, déduite de la langue du système (Réglages › Général › Langue et région).
+/// Interface language, taken from the system language (Settings › General › Language & Region).
 enum Lang: String {
     case en, fr, es, de, ja
 
@@ -24,7 +24,7 @@ func tr(_ en: String, _ fr: String, _ es: String, _ de: String, _ ja: String) ->
     }
 }
 
-/// Toutes les chaînes de l'interface.
+/// Every interface string.
 enum S {
     // MARK: Menu
     static var sectionCapture: String { tr("Capture", "Capture", "Captura", "Aufnahme", "キャプチャ") }
@@ -47,7 +47,7 @@ enum S {
     static var quit: String { tr("Quit Déclic", "Quitter Déclic", "Salir de Déclic", "Déclic beenden", "Déclic を終了") }
     static var choose: String { tr("Choose", "Choisir", "Elegir", "Auswählen", "選択") }
 
-    // MARK: Enregistrement
+    // MARK: Recording
     static var modeArea: String { tr("Area", "Zone", "Área", "Bereich", "範囲") }
     static var modeFullscreen: String { tr("Fullscreen", "Plein écran", "Pantalla", "Vollbild", "全画面") }
     static var modeApp: String { tr("App", "Application", "Aplicación", "App", "アプリ") }
@@ -56,7 +56,7 @@ enum S {
     static var stop: String { tr("Stop", "Arrêter", "Detener", "Stopp", "停止") }
     static var converting: String { tr("Converting to GIF…", "Conversion en GIF…", "Convirtiendo a GIF…", "GIF wird erstellt…", "GIFに変換中…") }
 
-    // MARK: Sélection
+    // MARK: Selection
     static var hintArea: String { tr("Drag to capture · Return: fullscreen · Esc: cancel",
                                      "Glisse pour capturer · Entrée : plein écran · Échap : annuler",
                                      "Arrastra para capturar · Intro: pantalla completa · Esc: cancelar",
@@ -76,7 +76,7 @@ enum S {
     static var clickToRecord: String { tr("Click to record", "Clique pour enregistrer", "Haz clic para grabar", "Klicken zum Filmen", "クリックで収録") }
     static var window: String { tr("Window", "Fenêtre", "Ventana", "Fenster", "ウインドウ") }
 
-    // MARK: Vignette / épingle
+    // MARK: Thumbnail / keep
     static var copy: String { tr("Copy", "Copier", "Copiar", "Kopieren", "コピー") }
     static var save: String { tr("Save", "Enregistrer", "Guardar", "Sichern", "保存") }
     static var annotate: String { tr("Annotate", "Annoter", "Anotar", "Kommentieren", "注釈") }
@@ -84,7 +84,7 @@ enum S {
     static var close: String { tr("Close", "Fermer", "Cerrar", "Schließen", "閉じる") }
     static var open: String { tr("Open", "Ouvrir", "Abrir", "Öffnen", "開く") }
 
-    // MARK: Éditeur
+    // MARK: Editor
     static var toolSelect: String { tr("Select", "Sélection", "Seleccionar", "Auswahl", "選択") }
     static var toolArrow: String { tr("Arrow", "Flèche", "Flecha", "Pfeil", "矢印") }
     static var toolLine: String { tr("Line", "Ligne", "Línea", "Linie", "線") }
@@ -116,11 +116,11 @@ enum S {
         tr("Error: \(message)", "Erreur : \(message)", "Error: \(message)", "Fehler: \(message)", "エラー: \(message)")
     }
 
-    // MARK: Capture défilante
+    // MARK: Scrolling capture
     static var scrollInstruction: String { tr("Scroll slowly", "Fais défiler lentement", "Desplázate despacio", "Langsam scrollen", "ゆっくりスクロール") }
     static var done: String { tr("Done", "Terminer", "Listo", "Fertig", "完了") }
 
-    // MARK: Erreurs
+    // MARK: Errors
     static var captureFailed: String { tr("Capture failed", "Capture impossible", "No se pudo capturar", "Aufnahme fehlgeschlagen", "キャプチャできませんでした") }
     static var permissionHelp: String { tr(
         "Make sure Déclic is allowed in System Settings › Privacy & Security › Screen & System Audio Recording, then relaunch the app.",
@@ -138,14 +138,14 @@ enum S {
     static var errEmpty: String { tr("The recording contains no frames.", "L'enregistrement ne contient aucune image.", "La grabación no contiene imágenes.", "Die Aufnahme enthält keine Bilder.", "収録にフレームがありません。") }
     static var errGIF: String { tr("GIF conversion failed.", "La conversion en GIF a échoué.", "Falló la conversión a GIF.", "GIF-Konvertierung fehlgeschlagen.", "GIFへの変換に失敗しました。") }
 
-    // MARK: Menu principal
+    // MARK: Main menu
     static var menuFile: String { tr("File", "Fichier", "Archivo", "Ablage", "ファイル") }
     static var menuEdit: String { tr("Edit", "Édition", "Edición", "Bearbeiten", "編集") }
     static var cut: String { tr("Cut", "Couper", "Cortar", "Ausschneiden", "カット") }
     static var paste: String { tr("Paste", "Coller", "Pegar", "Einsetzen", "ペースト") }
     static var selectAll: String { tr("Select All", "Tout sélectionner", "Seleccionar todo", "Alles auswählen", "すべてを選択") }
 
-    // MARK: Noms de fichiers
+    // MARK: File names
     static var screenshotPrefix: String { tr("Screenshot", "Capture d'écran", "Captura de pantalla", "Bildschirmfoto", "スクリーンショット") }
     static var recordingPrefix: String { tr("Screen Recording", "Enregistrement de l'écran", "Grabación de pantalla", "Bildschirmaufnahme", "画面収録") }
     static var at: String { tr("at", "à", "a las", "um", "") }

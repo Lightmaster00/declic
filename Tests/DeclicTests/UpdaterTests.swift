@@ -21,9 +21,9 @@ final class GalleryLayoutTests: XCTestCase {
         let frames = WindowGallery.layout(sizes, in: area)
         XCTAssertEqual(frames.count, sizes.count)
         for (i, f) in frames.enumerated() {
-            XCTAssertTrue(area.insetBy(dx: -1, dy: -1).contains(f), "tuile \(i) hors zone : \(f)")
+            XCTAssertTrue(area.insetBy(dx: -1, dy: -1).contains(f), "tile \(i) outside the area: \(f)")
             for g in frames[(i + 1)...] {
-                XCTAssertFalse(f.insetBy(dx: 1, dy: 1).intersects(g), "tuiles qui se chevauchent")
+                XCTAssertFalse(f.insetBy(dx: 1, dy: 1).intersects(g), "overlapping tiles")
             }
         }
     }

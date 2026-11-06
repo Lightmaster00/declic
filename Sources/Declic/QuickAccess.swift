@@ -1,9 +1,9 @@
 import AppKit
 import SwiftUI
 
-/// Ce que contient une vignette.
+/// What a thumbnail holds.
 enum QuickItemKind {
-    /// `origin` : position d'origine à l'écran (coordonnées Cocoa), pour épingler au même endroit.
+    /// `origin`: original on-screen position (Cocoa coordinates), to pin in the same place.
     case image(CGImage, scale: CGFloat, origin: CGRect?)
     case video(URL, isGIF: Bool, thumbnail: NSImage?)
 }
@@ -14,7 +14,7 @@ enum QuickLayout {
     static let maxCards = 40
 }
 
-/// Confirmation affichée sur la vignette après une action.
+/// Confirmation shown on the thumbnail after an action.
 struct QuickFeedback: Equatable {
     let symbol: String
     let text: String
@@ -22,7 +22,7 @@ struct QuickFeedback: Equatable {
 
 final class QuickCardModel: ObservableObject {
     @Published var hover = false
-    /// Épinglée : la vignette reste affichée après Copier / Enregistrer.
+    /// Kept: the thumbnail stays after Copy / Save.
     @Published var pinned = false
     @Published var feedback: QuickFeedback?
 }
@@ -64,7 +64,7 @@ struct QuickCardView: View {
                     PillButton(title: S.copy, symbol: "doc.on.doc", action: actions.copy)
                     PillButton(title: S.save, symbol: "square.and.arrow.down", prominent: true, action: actions.save)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity) // centrés dans la vignette
+                .frame(maxWidth: .infinity, maxHeight: .infinity) // centered in the thumbnail
                 .transition(.opacity)
 
                 VStack {
@@ -147,7 +147,7 @@ struct QuickCardView: View {
     }
 }
 
-/// Coche animée « Copié » / « Enregistré ».
+/// Animated "Copied" / "Saved" checkmark.
 struct FeedbackBadge: View {
     let feedback: QuickFeedback
     @State private var appeared = false
@@ -181,7 +181,7 @@ struct FeedbackBadge: View {
     }
 }
 
-/// Hosting view qui détecte le survol même quand l'app n'est pas active.
+/// Hosting view that detects hover even when the app isn't active.
 final class QuickHostingView: NSHostingView<QuickCardView> {
     var onHover: ((Bool) -> Void)?
     var onScroll: ((NSEvent) -> Void)?
@@ -215,8 +215,8 @@ final class QuickHostingView: NSHostingView<QuickCardView> {
     }
 }
 
-/// Pile de vignettes dans un coin de l'écran. Une vignette reste affichée jusqu'à
-/// ce qu'on choisisse une action (ou jusqu'au délai réglé dans les réglages).
+/// Stack of thumbnails in a screen corner. A thumbnail stays until
+/// an action is chosen (or until the delay set in settings).
 @MainActor
 final class QuickAccessManager {
     static let shared = QuickAccessManager()
@@ -235,7 +235,7 @@ final class QuickAccessManager {
 
     private var entries: [Entry] = []
     private var anchorScreen: NSScreen?
-    /// Défilement de la pile (quand elle dépasse la hauteur de l'écran).
+    /// Stack scroll offset (when it's taller than the screen).
     private var scrollOffset: CGFloat = 0
 
     func show(_ kind: QuickItemKind) {
@@ -258,7 +258,7 @@ final class QuickAccessManager {
             badge = isGIF ? "GIF" : "MP4"
         }
 
-        // Toutes les vignettes ont la même taille ; l'image s'y adapte.
+        // All thumbnails share one size; the image fits inside.
         let card = box
         let size = CGSize(width: card.width + QuickLayout.pad * 2, height: card.height + QuickLayout.pad * 2)
         let panel = FloatingPanel(size: size)
@@ -326,7 +326,7 @@ final class QuickAccessManager {
             h = box.height
             w = h * aspect
         }
-        // Assez de place pour les boutons, même pour une image très étroite ou très plate.
+        // Enough room for the buttons, even for a very narrow or very flat image.
         return CGSize(width: max(w, 176).rounded(), height: max(h, 128).rounded())
     }
 
@@ -361,7 +361,7 @@ final class QuickAccessManager {
         return max(0, top - (vf.maxY - 6))
     }
 
-    /// Molette / trackpad au-dessus d'une vignette : fait défiler toute la pile.
+    /// Scroll wheel / trackpad over a thumbnail scrolls the whole stack.
     private func scroll(_ event: NSEvent) {
         let delta = event.hasPreciseScrollingDeltas ? event.scrollingDeltaY : event.scrollingDeltaY * 12
         let limit = maxScroll
@@ -380,7 +380,7 @@ final class QuickAccessManager {
             let size = entry.panel.frame.size
             let x = right ? vf.maxX - size.width - 2 : vf.minX + 2
             let target = CGRect(x: x, y: y, width: size.width, height: size.height)
-            // Vignettes hors de l'écran (pile qui défile) : estompées puis masquées.
+            // Off-screen thumbnails (scrolled stack): faded, then hidden.
             let card = target.insetBy(dx: QuickLayout.pad, dy: QuickLayout.pad)
             let visible = card.intersection(vf.insetBy(dx: 0, dy: -2))
             let fraction = card.height > 0 ? max(0, visible.height) / card.height : 0
@@ -439,7 +439,7 @@ final class QuickAccessManager {
         confirm(entry, QuickFeedback(symbol: "checkmark", text: S.copiedShort))
     }
 
-    /// Affiche la coche animée, puis ferme la vignette (sauf si elle est épinglée).
+    /// Shows the animated checkmark, then closes the thumbnail (unless kept).
     private func confirm(_ entry: Entry, _ feedback: QuickFeedback) {
         Sound.success()
         entry.model.feedback = feedback
@@ -476,11 +476,11 @@ final class QuickAccessManager {
     }
 
 
-    /// Clic sur la vignette : ouvre directement l'éditeur d'annotations (aperçu pour les vidéos).
+    /// Clicking the thumbnail opens the annotation editor (preview for videos).
     private func preview(_ entry: Entry) {
         switch entry.kind {
         case .image(let image, let scale, _):
-            // La vignette reste affichée.
+            // The thumbnail stays on screen.
             EditorWindowController.open(image: image, scale: scale)
         case .video(let url, let isGIF, _):
             PreviewWindowController.show(.video(url, isGIF: isGIF))

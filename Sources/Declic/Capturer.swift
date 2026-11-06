@@ -3,7 +3,7 @@ import ScreenCaptureKit
 
 struct WindowCandidate {
     let window: SCWindow
-    /// Cadre en coordonnées Cocoa globales (origine en bas à gauche).
+    /// Frame in global Cocoa coordinates (origin at bottom left).
     let frame: CGRect
     let scale: CGFloat
 }
@@ -24,7 +24,7 @@ enum CaptureError: LocalizedError {
     }
 }
 
-/// Masque les icônes du bureau en posant le fond d'écran par-dessus.
+/// Hides desktop icons by covering them with the wallpaper.
 @MainActor
 enum DesktopCover {
     private static var windows: [NSWindow] = []
@@ -61,7 +61,7 @@ enum DesktopCover {
     }
 }
 
-/// Accès à ScreenCaptureKit.
+/// ScreenCaptureKit access.
 @MainActor
 enum Capturer {
     static func content() async throws -> SCShareableContent {
@@ -78,7 +78,7 @@ enum Capturer {
         return content.displays.first { $0.displayID == id }
     }
 
-    /// Filtre d'un écran entier, sans les fenêtres de Déclic (sauf le cache des icônes du bureau).
+    /// Filter for a whole display, without Déclic's windows (except the desktop-icon cover).
     static func displayFilter(_ display: SCDisplay, content: SCShareableContent) -> SCContentFilter {
         let pid = ProcessInfo.processInfo.processIdentifier
         let own = content.applications.filter { $0.processID == pid }
@@ -104,7 +104,7 @@ enum Capturer {
         return try await captureDisplay(display, content: content)
     }
 
-    /// Fige tous les écrans (sélection sur une image figée).
+    /// Freezes all displays (selection happens on a still image).
     static func snapshotAllScreens() async throws -> [ScreenShot] {
         let content = try await content()
         var shots: [ScreenShot] = []
@@ -129,7 +129,7 @@ enum Capturer {
         return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
     }
 
-    /// Fenêtres visibles, de la plus en avant à la plus en arrière.
+    /// Visible windows, front to back.
     static func windowCandidates(_ content: SCShareableContent) -> [WindowCandidate] {
         let pid = ProcessInfo.processInfo.processIdentifier
         let info = (CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID)
@@ -170,7 +170,7 @@ enum Capturer {
     }
 }
 
-/// Orchestration des captures d'écran et des actions après capture.
+/// Orchestrates screenshots and post-capture actions.
 @MainActor
 final class CaptureCoordinator {
     static let shared = CaptureCoordinator()
@@ -197,8 +197,8 @@ final class CaptureCoordinator {
         }
     }
 
-    /// Capture de zone, : survol = fenêtre surlignée (clic pour la capturer),
-    /// glisser = zone. L'écran n'est figé que si l'option est activée.
+    /// Area capture: hover = highlighted window (click to capture it),
+    /// drag = area. The screen is only frozen when the option is on.
     func captureArea() {
         guard !busy else { return }
         busy = true
@@ -211,7 +211,7 @@ final class CaptureCoordinator {
                 let frozen = prefs.freezeScreen
                 let shots: [ScreenShot]
                 if frozen || prefs.showMagnifier {
-                    // Image de chaque écran : affichée si l'écran est figé, sinon seulement pour la loupe.
+                    // Image of each display: shown when frozen, otherwise only used by the magnifier.
                     shots = try await Capturer.snapshotAllScreens().map {
                         ScreenShot(screen: $0.screen, image: $0.image, frozen: frozen)
                     }
@@ -248,7 +248,7 @@ final class CaptureCoordinator {
                             self.busy = false
                             self.deliver(cropped, scale: result.shot.screen.backingScaleFactor, origin: result.screenRect)
                         } else {
-                            // Écran non figé : on capture maintenant, une fois l'overlay disparu.
+                            // Screen not frozen: capture now, once the overlay is gone.
                             Task {
                                 defer {
                                     DesktopCover.hide()
@@ -276,7 +276,7 @@ final class CaptureCoordinator {
         }
     }
 
-    /// Capture de fenêtre : choix dans Mission Control (outil natif de macOS).
+    /// Window capture: pick the window in Déclic's window picker.
     func captureWindow() {
         guard !busy else { return }
         busy = true
@@ -296,7 +296,7 @@ final class CaptureCoordinator {
         }
     }
 
-    /// Point d'arrivée de toutes les captures d'images : historique + actions choisies dans les réglages.
+    /// Endpoint for every image capture: history + the actions chosen in settings.
     func deliver(_ captured: CGImage, scale captureScale: CGFloat, origin: CGRect?) {
         let prefs = Prefs.shared
         var image = captured

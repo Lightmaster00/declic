@@ -3,7 +3,7 @@ import Carbon
 import CoreImage
 import ScreenCaptureKit
 
-/// Vignettes des fenêtres, capturées en parallèle.
+/// Window thumbnails, captured in parallel.
 enum WindowThumbnails {
     static func capture(_ candidates: [WindowCandidate], maxSide: CGFloat) async -> [CGWindowID: CGImage] {
         await withTaskGroup(of: (CGWindowID, CGImage?).self) { group in
@@ -32,9 +32,9 @@ enum WindowThumbnails {
     }
 }
 
-/// « Mission Control » de Déclic : toutes les fenêtres s'écartent sur le fond d'écran,
-/// on en choisit une, puis tout revient exactement comme avant. Aucune app n'est
-/// activée et aucun bureau ne change : c'est un simple calque par-dessus l'écran.
+/// Déclic's Mission Control-style picker: every window spreads out over the wallpaper,
+/// you pick one, then everything returns exactly as it was. No app is
+/// activated and no Space switches: it's just a layer over the screen.
 @MainActor
 final class WindowGallery {
     private var window: OverlayWindow?
@@ -45,7 +45,7 @@ final class WindowGallery {
     private var hovered: GalleryTileView?
     private var hint: NSTextField?
     private var closing = false
-    /// App au premier plan à l'ouverture : on y revient à la fermeture, quoi qu'il arrive.
+    /// Frontmost app when opened: we always return to it on close.
     private let previousApp = NSWorkspace.shared.frontmostApplication
 
     init(candidates: [WindowCandidate], title: String, completion: @escaping (WindowCandidate?) -> Void) {
@@ -64,7 +64,7 @@ final class WindowGallery {
         }
     }
 
-    /// Annule (comme Échap).
+    /// Cancels (like Escape).
     func cancel() { finish(nil) }
 
     private func present(candidates: [WindowCandidate], thumbnails: [CGWindowID: CGImage], title: String) {
@@ -84,7 +84,7 @@ final class WindowGallery {
         content.addSubview(hint)
         self.hint = hint
 
-        // Disposition : tailles proportionnelles, ordre proche de la position réelle (haut → bas, gauche → droite).
+        // Layout: proportional sizes, order close to the real positions (top → bottom, left → right).
         let ordered = candidates.enumerated().sorted { a, b in
             let ra = a.element.frame, rb = b.element.frame
             if abs(ra.midY - rb.midY) > 80 { return ra.midY > rb.midY }
@@ -143,8 +143,8 @@ final class WindowGallery {
         for tile in tiles { tile.animate(fromStart: true, duration: 0.4) }
     }
 
-    /// Grille « justifiée » : toutes les fenêtres à la même échelle (leurs tailles relatives sont conservées),
-    /// rangées en lignes centrées, comme dans Mission Control.
+    /// "Justified" grid: every window at the same scale (relative sizes are kept),
+    /// arranged in centered rows, like Mission Control.
     static func layout(_ sizes: [CGSize], in area: CGRect) -> [CGRect] {
         guard !sizes.isEmpty else { return [] }
         let gap: CGFloat = 36
@@ -169,7 +169,7 @@ final class WindowGallery {
             return heights.reduce(0, +) + gap * CGFloat(max(0, rows.count - 1))
         }
 
-        // Plus grande échelle (≤ 0,8) pour que tout tienne.
+        // Largest scale (≤ 0.8) that fits everything.
         var lo: CGFloat = 0.02, hi: CGFloat = 0.8
         for _ in 0..<24 {
             let mid = (lo + hi) / 2
@@ -208,8 +208,8 @@ final class WindowGallery {
         keys = []
         let chosen = tile?.candidate
 
-        // Retour direct : toute la galerie s'efface d'un coup, en fondu, pour laisser
-        // la page d'origine telle quelle (sans faire repasser toutes les fenêtres).
+        // Direct return: the whole gallery fades out at once, leaving
+        // the original screen as it was (without flying every window back).
         guard let overlay = window else {
             restorePreviousApp()
             cb(chosen)
@@ -240,7 +240,7 @@ final class WindowGallery {
     }
 }
 
-/// Fond d'écran assombri et flouté, comme Mission Control.
+/// Dimmed, blurred wallpaper, like Mission Control.
 final class GalleryBackgroundView: NSView {
     var onClickOutside: (() -> Void)?
     private let wallpaper = CALayer()
@@ -263,7 +263,7 @@ final class GalleryBackgroundView: NSView {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
-    /// Fond d'écran réduit puis flouté (rapide, et doux une fois agrandi).
+    /// Wallpaper downscaled then blurred (fast, and soft once enlarged).
     private static func blurredWallpaper(for screen: NSScreen) -> CGImage? {
         guard let url = NSWorkspace.shared.desktopImageURL(for: screen),
               let thumb = ImageTools.thumbnail(of: url, maxPixel: 640) else { return nil }
@@ -276,7 +276,7 @@ final class GalleryBackgroundView: NSView {
         return blurred
     }
 
-    /// Fond (fond d'écran + voile) en fondu, sans toucher aux vignettes.
+    /// Fades the backdrop (wallpaper + veil) without touching the tiles.
     func setBackdrop(visible: Bool, duration: CFTimeInterval) {
         let target: Float = visible ? 1 : 0
         for layer in [wallpaper, dim] {
@@ -308,7 +308,7 @@ final class GalleryBackgroundView: NSView {
     override func mouseDown(with event: NSEvent) { onClickOutside?() }
 }
 
-/// Vignette d'une fenêtre dans la galerie.
+/// A window's tile in the gallery.
 final class GalleryTileView: NSView {
     let candidate: WindowCandidate
     var onClick: (() -> Void)?
@@ -397,7 +397,7 @@ final class GalleryTileView: NSView {
         highlightLayer.frame = bounds.insetBy(dx: -5, dy: -5)
         CATransaction.commit()
 
-        // Nom de l'app sous la fenêtre (affiché au survol).
+        // App name under the window (shown on hover).
         let iconSize: CGFloat = 18
         let maxText = max(60, bounds.width + 80)
         let textWidth = min(label.intrinsicContentSize.width, maxText)
@@ -407,7 +407,7 @@ final class GalleryTileView: NSView {
         label.frame = CGRect(x: 10 + iconSize + 8, y: 6, width: textWidth, height: 16)
     }
 
-    /// Transformation qui ramène la vignette sur la vraie fenêtre.
+    /// Transform that puts the tile back over the real window.
     private func startTransform() -> CATransform3D {
         guard let layer else { return CATransform3DIdentity }
         let f = frame
@@ -421,7 +421,7 @@ final class GalleryTileView: NSView {
         return CATransform3DConcat(CATransform3DMakeScale(sx, sy, 1), CATransform3DMakeTranslation(tx, ty, 0))
     }
 
-    /// `fromStart` : de la vraie fenêtre vers la grille ; sinon retour vers la vraie fenêtre.
+    /// `fromStart`: from the real window to the grid; otherwise back to the real window.
     func animate(fromStart: Bool, duration: CFTimeInterval) {
         guard let layer else { return }
         let start = startTransform()
@@ -429,7 +429,7 @@ final class GalleryTileView: NSView {
         animation.fromValue = NSValue(caTransform3D: fromStart ? start : CATransform3DIdentity)
         animation.toValue = NSValue(caTransform3D: fromStart ? CATransform3DIdentity : start)
         animation.duration = duration
-        // Aller : départ vif puis freinage ; retour : accélération et freinage doux.
+        // Out: quick start then ease; back: ease in and out.
         animation.timingFunction = fromStart
             ? CAMediaTimingFunction(controlPoints: 0.2, 0.9, 0.25, 1)
             : CAMediaTimingFunction(controlPoints: 0.4, 0, 0.2, 1)

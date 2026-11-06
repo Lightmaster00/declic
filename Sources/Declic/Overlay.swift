@@ -1,9 +1,9 @@
 import AppKit
 import Carbon
 
-/// Fenêtre plein écran sans bordure, au-dessus de tout.
-/// C'est un panneau « non activant » : l'app au premier plan reste active,
-/// donc rien ne change visuellement à l'écran quand la sélection apparaît.
+/// Borderless full-screen window above everything.
+/// It's a non-activating panel: the frontmost app stays active,
+/// so nothing visibly changes on screen when the selection appears.
 final class OverlayWindow: NSPanel {
     init(screen: NSScreen) {
         super.init(contentRect: screen.frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
@@ -23,19 +23,19 @@ final class OverlayWindow: NSPanel {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
-    // Jamais « clé » : la fenêtre de l'app au premier plan garde le focus clavier
-    // (sinon il fallait recliquer dessus après chaque capture). Les touches passent
-    // par des raccourcis globaux (Échap, Entrée, Espace).
+    // Never key: the frontmost app's window keeps keyboard focus
+    // (otherwise you had to click it again after every capture). Keys go
+    // through global shortcuts (Escape, Return, Space).
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
 }
 
-/// Curseur des overlays.
+/// Overlay cursor.
 ///
-/// Déclic n'est pas l'app active pendant une sélection (pour ne rien changer à l'écran),
-/// donc macOS rend normalement le curseur à l'app du dessous : on voyait tantôt la croix,
-/// tantôt la flèche ou un curseur texte. On autorise Déclic à fixer le curseur en arrière-plan
-/// et on le réimpose en continu tant qu'un overlay est ouvert.
+/// Déclic isn't the active app during a selection (so nothing changes on screen),
+/// so macOS normally hands the cursor back to the app underneath: you'd see the crosshair,
+/// then the arrow or a text cursor. Déclic is allowed to set the cursor in the background
+/// and keeps re-applying it while an overlay is open.
 @MainActor
 enum OverlayCursor {
     private static var timer: Timer?
@@ -60,8 +60,8 @@ enum OverlayCursor {
         NSCursor.arrow.set()
     }
 
-    /// Propriété « SetsCursorInBackground » de la connexion au serveur de fenêtres
-    /// (même technique que les outils de capture et d'accessibilité).
+    /// "SetsCursorInBackground" property of the window server connection
+    /// (the same technique screenshot and accessibility tools use).
     private static func allowBackgroundCursor() {
         guard !enabledBackground else { return }
         enabledBackground = true
@@ -76,9 +76,9 @@ enum OverlayCursor {
     }
 }
 
-/// Dessins communs des overlays.
+/// Shared overlay drawing.
 enum OverlayDrawing {
-    /// Petite étiquette sombre (dimensions, coordonnées, nom d'app).
+    /// Small dark label (size, coordinates, app name).
     @discardableResult
     static func label(_ text: String, at point: CGPoint, in bounds: CGRect,
                       size: CGFloat = 11, centered: Bool = false, icon: NSImage? = nil) -> CGRect {
@@ -117,7 +117,7 @@ enum OverlayDrawing {
         return r
     }
 
-    /// Loupe : pixels agrandis autour du point, avec grille et coordonnées.
+    /// Magnifier: enlarged pixels around the point, with grid and coordinates.
     static func loupe(image: CGImage, at m: CGPoint, in bounds: CGRect, ctx: CGContext) {
         guard bounds.width > 0 else { return }
         let sx = CGFloat(image.width) / bounds.width
@@ -159,7 +159,7 @@ enum OverlayDrawing {
                                       width: visible.width * cell,
                                       height: visible.height * cell))
         }
-        // Grille très discrète.
+        // Very subtle grid.
         ctx.setStrokeColor(NSColor.white.withAlphaComponent(0.05).cgColor)
         ctx.setLineWidth(0.5)
         for i in 1..<Int(n) {
@@ -178,7 +178,7 @@ enum OverlayDrawing {
         ctx.setStrokeColor(NSColor.white.cgColor)
         ctx.setLineWidth(1)
         ctx.stroke(center)
-        // Bandeau des coordonnées.
+        // Coordinates strip.
         let band = CGRect(x: rect.minX, y: rect.minY, width: side, height: 16)
         ctx.setFillColor(NSColor.black.withAlphaComponent(0.55).cgColor)
         ctx.fill(band)
@@ -201,17 +201,17 @@ enum OverlayDrawing {
     }
 }
 
-// MARK: - Résultat d'une sélection
+// MARK: - Selection result
 
 struct ScreenShot {
     let screen: NSScreen
-    /// Image de l'écran (pour la loupe, et pour l'affichage si l'écran est figé).
+    /// Display image (for the magnifier, and shown when the screen is frozen).
     let image: CGImage?
-    /// L'écran est figé : la capture se fait dans `image`.
+    /// The screen is frozen: the capture is cut from `image`.
     var frozen = true
 }
 
-/// Résultat d'une capture de zone : une zone tracée, ou une fenêtre cliquée.
+/// Result of an area capture: a drawn area, or a clicked window.
 enum AreaSelection {
     case area(AreaResult)
     case window(WindowCandidate)
@@ -219,7 +219,7 @@ enum AreaSelection {
 
 struct AreaResult {
     let shot: ScreenShot
-    /// Rectangle en points, origine en bas à gauche, relatif à l'écran.
+    /// Rectangle in points, origin at bottom left, relative to the display.
     let rect: CGRect
     var viewSize: CGSize { shot.screen.frame.size }
 
@@ -232,7 +232,7 @@ struct AreaResult {
         return crop(image)
     }
 
-    /// Découpe la sélection dans une image de l'écran entier.
+    /// Cuts the selection out of a full-display image.
     func crop(_ image: CGImage) -> CGImage? {
         let sx = CGFloat(image.width) / viewSize.width
         let sy = CGFloat(image.height) / viewSize.height
@@ -243,24 +243,24 @@ struct AreaResult {
         return image.cropping(to: r)
     }
 
-    /// Rectangle en points, origine en haut à gauche de l'écran (pour SCStreamConfiguration.sourceRect).
+    /// Rectangle in points, origin at the display's top left (for SCStreamConfiguration.sourceRect).
     var displayRect: CGRect {
         CGRect(x: rect.minX, y: viewSize.height - rect.maxY, width: rect.width, height: rect.height)
     }
 
-    /// Rectangle en coordonnées Cocoa globales.
+    /// Rectangle in global Cocoa coordinates.
     var screenRect: CGRect {
         rect.offsetBy(dx: shot.screen.frame.minX, dy: shot.screen.frame.minY)
     }
 }
 
-// MARK: - Vue de sélection
+// MARK: - Selection view
 
 final class AreaSelectionView: NSView {
     enum Mode {
-        /// Capture au relâchement du clic.
+        /// Captures on mouse up.
         case immediate
-        /// Sélection modifiable (déplacer, redimensionner), validée ailleurs.
+        /// Editable selection (move, resize), confirmed elsewhere.
         case adjustable
     }
 
@@ -271,11 +271,11 @@ final class AreaSelectionView: NSView {
     var hint: String?
 
     var onFinish: ((CGRect?) -> Void)?
-    /// Fenêtres (coordonnées locales, de l'avant vers l'arrière) : survol = surlignage, clic = capture.
+    /// Windows (local coordinates, front to back): hover = highlight, click = capture.
     var windowRects: [CGRect] = []
     var onWindowClick: ((Int) -> Void)?
     private var hoveredWindow: Int?
-    /// Mode fenêtre (touche Espace) : survol = fenêtre surlignée, clic = capture.
+    /// Window mode (Space key): hover = highlighted window, click = capture.
     var windowMode = false {
         didSet {
             if let mouse { updateHoveredWindow(mouse) } else { hoveredWindow = nil }
@@ -347,7 +347,7 @@ final class AreaSelectionView: NSView {
         let p = convert(event.locationInWindow, from: nil)
         mouse = p
         updateHoveredWindow(p)
-        // L'app n'est pas active : on impose le curseur nous-mêmes.
+        // The app isn't active: set the cursor ourselves.
         desiredCursor.set()
         needsDisplay = true
     }
@@ -357,7 +357,7 @@ final class AreaSelectionView: NSView {
         needsDisplay = true
     }
 
-    /// Curseur voulu à la position actuelle de la souris.
+    /// Cursor wanted at the current mouse position.
     var desiredCursor: NSCursor {
         guard let window else { return .crosshair }
         let p = convert(window.mouseLocationOutsideOfEventStream, from: nil)
@@ -371,12 +371,12 @@ final class AreaSelectionView: NSView {
         return .crosshair
     }
 
-    /// Une sélection qui couvre presque tout l'écran ne se déplace pas : un nouveau tracé la remplace.
+    /// A selection covering almost the whole screen doesn't move: a new drag replaces it.
     private func canMove(_ r: CGRect) -> Bool {
         r.width * r.height < bounds.width * bounds.height * 0.85
     }
 
-    // MARK: Poignées
+    // MARK: Handles
 
     private func handlePoints(_ r: CGRect) -> [CGPoint] {
         [CGPoint(x: r.minX, y: r.minY), CGPoint(x: r.midX, y: r.minY), CGPoint(x: r.maxX, y: r.minY),
@@ -384,8 +384,8 @@ final class AreaSelectionView: NSView {
          CGPoint(x: r.minX, y: r.maxY), CGPoint(x: r.minX, y: r.midY)]
     }
 
-    /// Poignée sous le pointeur : les coins, puis n'importe quel point des bords (pas seulement
-    /// les petits ronds), pour redimensionner facilement.
+    /// Handle under the pointer: the corners, then any point along the edges (not only
+    /// the small dots), so resizing is easy.
     /// 0 bas-gauche, 1 bas, 2 bas-droite, 3 droite, 4 haut-droite, 5 haut, 6 haut-gauche, 7 gauche.
     private func handle(at p: CGPoint) -> Int? {
         guard mode == .adjustable, let r = selection, r.width > 0, r.height > 0 else { return nil }
@@ -403,7 +403,7 @@ final class AreaSelectionView: NSView {
         return nil
     }
 
-    /// Curseur de redimensionnement d'une poignée (flèches doubles, comme les bords de fenêtre).
+    /// Resize cursor for a handle (double arrows, like window edges).
     private static func resizeCursor(for handle: Int) -> NSCursor {
         switch handle {
         case 1, 5: return .resizeUpDown
@@ -413,14 +413,14 @@ final class AreaSelectionView: NSView {
         }
     }
 
-    /// Curseurs diagonaux de macOS (ceux des coins de fenêtre), non exposés publiquement.
+    /// macOS diagonal cursors (the window-corner ones), not public API.
     private static func systemCursor(_ name: String) -> NSCursor? {
         let selector = NSSelectorFromString(name)
         guard NSCursor.responds(to: selector) else { return nil }
         return NSCursor.perform(selector)?.takeUnretainedValue() as? NSCursor
     }
 
-    // MARK: Souris
+    // MARK: Mouse
 
     override func mouseDown(with event: NSEvent) {
         let p = convert(event.locationInWindow, from: nil)
@@ -494,7 +494,7 @@ final class AreaSelectionView: NSView {
             if valid {
                 onFinish?(r)
             } else if windowMode, let index = hoveredWindow {
-                // Simple clic sur une fenêtre : on capture la fenêtre.
+                // Single click on a window: capture that window.
                 selection = nil
                 onWindowClick?(index)
             } else {
@@ -505,7 +505,7 @@ final class AreaSelectionView: NSView {
                 selection = r
                 onChange?(r)
             } else if case .new = drag {
-                // Simple clic : on efface la sélection pour pouvoir en tracer une autre.
+                // Single click: clear the selection so a new one can be drawn.
                 selection = nil
                 onChange?(nil)
             }
@@ -529,18 +529,18 @@ final class AreaSelectionView: NSView {
         CGRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(a.x - b.x), height: abs(a.y - b.y)).integral
     }
 
-    // MARK: Dessin
+    // MARK: Drawing
 
     override func draw(_ dirtyRect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
         let sel = selection.flatMap { $0.width > 0 && $0.height > 0 ? $0 : nil }
 
-        // Voile invisible : il suffit pour recevoir les clics.
+        // Invisible veil: enough to receive clicks.
         ctx.setFillColor(NSColor.black.withAlphaComponent(0.004).cgColor)
         ctx.fill(bounds)
 
-        // Mode capture : l'écran n'est pas assombri ; seule la fenêtre survolée
-        // (mode fenêtre) est mise en évidence.
+        // Capture mode: the screen isn't dimmed; only the hovered window
+        // (window mode) is highlighted.
         if mode == .immediate {
             let showWindow = windowMode && sel == nil
             if showWindow, let index = hoveredWindow, index < windowRects.count {
@@ -555,7 +555,7 @@ final class AreaSelectionView: NSView {
             }
         }
 
-        // En mode enregistrement, on assombrit légèrement autour de la zone choisie.
+        // In recording mode, the area around the selection is slightly dimmed.
         if mode == .adjustable, let sel {
             let path = CGMutablePath()
             path.addRect(bounds)
@@ -566,7 +566,7 @@ final class AreaSelectionView: NSView {
         }
 
         if let sel {
-            // Rectangle de sélection : bordure fine, lisible sur tous les fonds.
+            // Selection rectangle: thin border, readable on any background.
             ctx.setStrokeColor(NSColor.black.withAlphaComponent(0.3).cgColor)
             ctx.setLineWidth(1)
             ctx.stroke(sel.insetBy(dx: -1.5, dy: -1.5))
@@ -585,7 +585,7 @@ final class AreaSelectionView: NSView {
             }
         }
 
-        // Lignes de repère fines sur tout l'écran, lisibles sur fond clair ou sombre.
+        // Thin full-screen guide lines, readable on light or dark backgrounds.
         if showCrosshair, sel == nil || dragging, let m = mouse {
             let x = m.x.rounded() + 0.5, y = m.y.rounded() + 0.5
             ctx.saveGState()
@@ -605,7 +605,7 @@ final class AreaSelectionView: NSView {
             OverlayDrawing.loupe(image: image, at: m, in: bounds, ctx: ctx)
         }
 
-        // Taille de la sélection, à côté du curseur.
+        // Selection size, next to the cursor.
         if let sel, dragging, let m = mouse {
             let scale = window?.backingScaleFactor ?? 2
             let loupeVisible = showMagnifier && image != nil
@@ -628,7 +628,7 @@ final class AreaSelectionView: NSView {
         }
     }
 
-    /// Texte blanc ombré, en bas à droite du réticule, sans fond (style macOS).
+    /// White text with shadow, bottom right of the crosshair, no background (macOS style).
     private static func drawCoordinates(_ text: String, near m: CGPoint, in bounds: CGRect) {
         let shadow = NSShadow()
         shadow.shadowColor = NSColor.black.withAlphaComponent(0.9)
@@ -648,7 +648,7 @@ final class AreaSelectionView: NSView {
     }
 }
 
-// MARK: - Capture de zone (immédiate)
+// MARK: - Area capture (immediate)
 
 @MainActor
 final class AreaSelector {
@@ -698,7 +698,7 @@ final class AreaSelector {
             window.orderFrontRegardless()
         }
 
-        // Échap / Entrée fonctionnent même si l'app n'a pas pu devenir active.
+        // Escape / Return work even though the app isn't active.
         escKey = HotKeyCenter.shared.register(keyCode: kVK_Escape, modifiers: 0) { [weak self] in
             self?.cancel()
         }
@@ -760,7 +760,7 @@ final class AreaSelector {
     }
 }
 
-// MARK: - Zone à enregistrer (modifiable)
+// MARK: - Recording area (editable)
 
 @MainActor
 final class RecordAreaPicker {
@@ -798,7 +798,7 @@ final class RecordAreaPicker {
     }
 
     private func selectionChanged(on screen: NSScreen, view: AreaSelectionView, rect: CGRect?) {
-        // Une seule sélection à la fois, tous écrans confondus.
+        // Only one selection at a time, across all displays.
         for entry in views where entry.view !== view && entry.view.selection != nil {
             entry.view.setSelection(nil)
         }
@@ -806,7 +806,7 @@ final class RecordAreaPicker {
         onChange?(current)
     }
 
-    /// Efface la sélection ; renvoie false s'il n'y en avait pas.
+    /// Clears the selection; returns false if there was none.
     @discardableResult
     func clearSelection() -> Bool {
         guard current != nil else { return false }
@@ -825,8 +825,8 @@ final class RecordAreaPicker {
     }
 }
 
-/// Curseur à afficher : celui de la vue sous la souris, ou la flèche au-dessus
-/// d'une autre fenêtre (barre d'enregistrement, par exemple).
+/// Cursor to show: the one from the view under the mouse, or the arrow over
+/// another window (the recording bar, for example).
 @MainActor
 private func overlayCursor(windows: [OverlayWindow], views: [AreaSelectionView]) -> NSCursor {
     let mouse = NSEvent.mouseLocation
@@ -835,7 +835,7 @@ private func overlayCursor(windows: [OverlayWindow], views: [AreaSelectionView])
     return views.first(where: { $0.window === window })?.desiredCursor ?? .crosshair
 }
 
-// MARK: - Sélection de fenêtre
+// MARK: - Window selection
 
 @MainActor
 final class WindowSelector {
@@ -845,7 +845,7 @@ final class WindowSelector {
     private var completion: ((WindowCandidate?) -> Void)?
     private var escKey: UInt32?
     let hint: String
-    /// Mode persistant : un clic sélectionne sans fermer l'overlay.
+    /// Persistent mode: a click selects without closing the overlay.
     let persistent: Bool
     var onSelect: ((WindowCandidate) -> Void)?
     private(set) var hovered: WindowCandidate?
@@ -904,7 +904,7 @@ final class WindowSelector {
         }
     }
 
-    /// Désélectionne (mode persistant) ; renvoie false s'il n'y avait rien.
+    /// Deselects (persistent mode); returns false if nothing was selected.
     @discardableResult
     func clearSelection() -> Bool {
         guard selected != nil else { return false }
@@ -970,7 +970,7 @@ final class WindowPickView: NSView {
         let focus = selected ?? hovered
         let radius: CGFloat = 10
 
-        // Voile autour de la fenêtre mise en avant (il sert aussi à recevoir les clics).
+        // Veil around the highlighted window (it also receives clicks).
         ctx.setFillColor(NSColor.black.withAlphaComponent(0.28).cgColor)
         let path = CGMutablePath()
         path.addRect(bounds)

@@ -1,9 +1,9 @@
 import AppKit
 import SwiftUI
 
-// MARK: - Fonds
+// MARK: - Backgrounds
 
-/// Flou de fond façon HUD macOS, toujours actif (même dans un panneau non activé).
+/// macOS HUD-style background blur, always active (even in a non-activated panel).
 struct VisualEffectBackground: NSViewRepresentable {
     var material: NSVisualEffectView.Material = .hudWindow
 
@@ -20,7 +20,7 @@ struct VisualEffectBackground: NSViewRepresentable {
     }
 }
 
-/// Zone qui permet de déplacer la fenêtre (barre d'outils dans la barre de titre).
+/// Area that drags the window (toolbar inside the title bar).
 struct WindowDragArea: NSViewRepresentable {
     final class DragView: NSView {
         override var mouseDownCanMoveWindow: Bool { true }
@@ -30,13 +30,13 @@ struct WindowDragArea: NSViewRepresentable {
 }
 
 extension View {
-    /// Les panneaux flottants ne sont jamais « clé » : on force l'apparence active des contrôles.
+    /// Floating panels are never key: force the active appearance of controls.
     func activeControls() -> some View {
         environment(\.controlActiveState, .key)
     }
 }
 
-/// Enfoncement au clic, avec un petit rebond au relâchement.
+/// Press-down on click, with a small bounce on release.
 struct PressableStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -51,7 +51,7 @@ struct PressableStyle: ButtonStyle {
 
 // MARK: - Confirmation
 
-/// Pastille « ✓ Copié » qui apparaît en bas de l'écran pour confirmer une action.
+/// "✓ Copied" pill shown at the bottom of the screen to confirm an action.
 @MainActor
 enum FeedbackHUD {
     private static var panel: FloatingPanel?
@@ -117,7 +117,7 @@ private struct FeedbackPill: View {
     }
 }
 
-/// Matière « verre » commune aux boutons flottants.
+/// Shared "glass" material for floating buttons.
 struct GlassFill<S: InsettableShape>: View {
     let shape: S
     var prominent = false
@@ -141,9 +141,9 @@ struct GlassFill<S: InsettableShape>: View {
     }
 }
 
-// MARK: - Boutons
+// MARK: - Buttons
 
-/// Grand bouton « pilule » (Copier / Enregistrer sur les vignettes, actions des HUD).
+/// Large pill button (Copy / Save on thumbnails, HUD actions).
 struct PillButton: View {
     let title: String
     let symbol: String
@@ -174,13 +174,13 @@ struct PillButton: View {
     }
 }
 
-/// Bouton rond (icône seule).
+/// Round button (icon only).
 struct CircleIconButton: View {
     let symbol: String
     let help: String
     var size: CGFloat = 30
     var dark = false
-    /// Bouton « activé » (ex. vignette épinglée) : rempli de la couleur d'accent.
+    /// "On" button (e.g. kept thumbnail): filled with the accent color.
     var active = false
     let action: () -> Void
     @State private var hover = false
@@ -201,7 +201,7 @@ struct CircleIconButton: View {
     }
 }
 
-/// Bouton icône de HUD (même style que les boutons ronds).
+/// HUD icon button (same style as round buttons).
 struct HUDIconButton: View {
     let symbol: String
     let help: String
@@ -215,7 +215,7 @@ struct HUDIconButton: View {
     }
 }
 
-/// Bouton principal de HUD (Enregistrer, Terminer, Arrêter…).
+/// Main HUD button (Record, Done, Stop…).
 struct HUDTextButton: View {
     let title: String
     var symbol: String?
@@ -245,7 +245,7 @@ struct HUDTextButton: View {
     }
 }
 
-/// Contrôle segmenté « verre » pour les HUD (modes, formats).
+/// "Glass" segmented control for HUDs (modes, formats).
 struct GlassSegmented<Value: Hashable>: View {
     struct Item {
         let value: Value
@@ -287,7 +287,7 @@ struct GlassSegmented<Value: Hashable>: View {
 
 // MARK: - HUD
 
-/// Fond commun des HUD (barres d'enregistrement, de capture défilante…).
+/// Shared HUD background (recording bar, scrolling capture bar…).
 struct HUDBackground: ViewModifier {
     var cornerRadius: CGFloat = 16
 
@@ -313,7 +313,7 @@ extension View {
     }
 }
 
-/// Point rouge qui pulse pendant un enregistrement.
+/// Red dot pulsing while recording.
 struct PulsingDot: View {
     @State private var on = false
 
@@ -328,7 +328,7 @@ struct PulsingDot: View {
     }
 }
 
-/// Séparateur vertical fin pour les HUD.
+/// Thin vertical divider for HUDs.
 struct HUDDivider: View {
     var height: CGFloat = 26
     var body: some View {

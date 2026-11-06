@@ -2,7 +2,7 @@ import AppKit
 import Combine
 import SwiftUI
 
-// MARK: - Canevas
+// MARK: - Canvas
 
 final class EditorCanvasView: NSView, NSTextFieldDelegate {
     let state: EditorState
@@ -40,9 +40,9 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
     override var acceptsFirstResponder: Bool { true }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
-    // MARK: Géométrie
+    // MARK: Geometry
 
-    /// Échelle (points par pixel d'image) quand l'image est ajustée à la fenêtre.
+    /// Scale (points per image pixel) when the image fits the window.
     private var fitScale: CGFloat {
         let size = state.imageSize
         let avail = bounds.insetBy(dx: 36, dy: 36)
@@ -62,7 +62,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
                       width: w, height: h)
     }
 
-    /// L'image ne peut pas sortir de la vue : décalage nul si elle tient, borné sinon.
+    /// The image can't leave the view: no offset when it fits, clamped otherwise.
     private func clampedPan(_ p: CGPoint, width w: CGFloat, height h: CGFloat) -> CGPoint {
         let mx = max(0, (w - bounds.width) / 2 + 36)
         let my = max(0, (h - bounds.height) / 2 + 36)
@@ -71,7 +71,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
 
     // MARK: Zoom
 
-    /// Zoome en gardant le point `anchor` (coordonnées de la vue) immobile.
+    /// Zooms while keeping `anchor` (view coordinates) in place.
     func setZoom(_ zoom: CGFloat, anchor: CGPoint? = nil) {
         let base = fitScale
         let maxZoom = Self.maxZoomPercent / 100 / state.pixelScale / base
@@ -81,7 +81,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
         let size = state.imageSize
         let s = base * z
         let w = size.width * s, h = size.height * s
-        // Nouveau centre pour que ip reste sous l'ancre.
+        // New center so that ip stays under the anchor.
         let origin = CGPoint(x: a.x - ip.x * s, y: a.y - ip.y * s)
         let pan = CGPoint(x: origin.x + w / 2 - bounds.midX, y: origin.y + h / 2 - bounds.midY)
         state.zoom = z
@@ -96,7 +96,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
         state.pan = .zero
         updateZoomPercent()
     }
-    /// Taille réelle (1 pixel d'image = 1 pixel d'écran).
+    /// Actual size (1 image pixel = 1 screen pixel).
     func zoomActualSize() {
         let screenScale = window?.backingScaleFactor ?? state.pixelScale
         setZoom(1 / screenScale / fitScale)
@@ -112,13 +112,13 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
         Task { @MainActor [weak self] in self?.updateZoomPercent() }
     }
 
-    /// Pincement sur le trackpad.
+    /// Trackpad pinch.
     override func magnify(with event: NSEvent) {
         let p = convert(event.locationInWindow, from: nil)
         setZoom(state.zoom * (1 + event.magnification), anchor: p)
     }
 
-    /// Double tap à deux doigts : bascule ajusté / taille réelle.
+    /// Two-finger double tap: toggles fit / zoomed in.
     override func smartMagnify(with event: NSEvent) {
         if abs(state.zoom - 1) > 0.01 {
             zoomToFit()
@@ -128,7 +128,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
         }
     }
 
-    /// Molette : ⌘ ou ⌥ + molette zoome ; sinon, une image agrandie se déplace.
+    /// Scroll wheel: ⌘ or ⌥ + scroll zooms; otherwise a zoomed image pans.
     override func scrollWheel(with event: NSEvent) {
         let p = convert(event.locationInWindow, from: nil)
         if event.modifierFlags.contains(.command) || event.modifierFlags.contains(.option) {
@@ -162,12 +162,12 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
         addCursorRect(imageRect, cursor: state.tool == .select ? .arrow : .crosshair)
     }
 
-    // MARK: Dessin
+    // MARK: Drawing
 
     override func draw(_ dirtyRect: NSRect) {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
-        // Fond sombre avec une trame de points discrète.
+        // Dark background with a subtle dot pattern.
         ctx.setFillColor(NSColor(calibratedWhite: 0.11, alpha: 1).cgColor)
         ctx.fill(bounds)
         ctx.setFillColor(NSColor(calibratedWhite: 1, alpha: 0.06).cgColor)
@@ -185,7 +185,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
         let r = imageRect
         guard r.width > 0 else { return }
 
-        // Ombre portée sous l'image.
+        // Drop shadow under the image.
         ctx.saveGState()
         ctx.setShadow(offset: CGSize(width: 0, height: 6), blur: 24, color: NSColor.black.withAlphaComponent(0.55).cgColor)
         ctx.setFillColor(NSColor(calibratedWhite: 0.2, alpha: 1).cgColor)
@@ -216,7 +216,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
             ctx.setStrokeColor(NSColor.white.cgColor)
             ctx.setLineWidth(1)
             ctx.stroke(vr)
-            // Grille des tiers.
+            // Rule-of-thirds grid.
             ctx.setStrokeColor(NSColor.white.withAlphaComponent(0.35).cgColor)
             for i in 1...2 {
                 let fx = vr.minX + vr.width * CGFloat(i) / 3
@@ -228,12 +228,12 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
         }
     }
 
-    // MARK: Souris
+    // MARK: Mouse
 
     override func mouseDown(with event: NSEvent) {
         commitText()
         window?.makeFirstResponder(self)
-        // Espace + glisser (ou clic du milieu) : déplacer l'image agrandie.
+        // Space + drag (or middle click): pan the zoomed image.
         if spaceDown {
             panning = convert(event.locationInWindow, from: nil)
             NSCursor.closedHand.set()
@@ -338,7 +338,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
         }
     }
 
-    /// Maj : angles de 45° pour les traits, carrés/cercles pour les formes.
+    /// Shift: 45° angles for lines, squares/circles for shapes.
     private func constrained(from s: CGPoint, to p: CGPoint) -> CGPoint {
         let dx = p.x - s.x, dy = p.y - s.y
         switch state.tool {
@@ -375,7 +375,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
         return hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy))
     }
 
-    // MARK: Texte
+    // MARK: Text
 
     private func beginText(at p: CGPoint) {
         let fontSize = AnnotationRenderer.fontSize(width: state.strokeWidth, scale: state.pixelScale) * viewScale
@@ -416,7 +416,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
         window?.makeFirstResponder(self)
     }
 
-    // MARK: Clavier & menus
+    // MARK: Keyboard & menus
 
     override func keyUp(with event: NSEvent) {
         if event.keyCode == 49 {
@@ -429,7 +429,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
     }
 
     override func keyDown(with event: NSEvent) {
-        // ⌘+ / ⌘- / ⌘0 (ajuster) / ⌘1 (taille réelle).
+        // ⌘+ / ⌘- / ⌘0 (fit) / ⌘1 (actual size).
         if event.modifierFlags.intersection([.command, .control, .option]) == .command,
            let key = event.charactersIgnoringModifiers {
             switch key {
@@ -440,7 +440,7 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
             default: break
             }
         }
-        if event.keyCode == 49 { // espace : main pour déplacer
+        if event.keyCode == 49 { // space: hand to pan
             if !spaceDown {
                 spaceDown = true
                 NSCursor.openHand.set()
@@ -448,9 +448,9 @@ final class EditorCanvasView: NSView, NSTextFieldDelegate {
             return
         }
         switch event.keyCode {
-        case 51, 117: // effacement arrière / suppr
+        case 51, 117: // backspace / delete
             state.deleteSelected()
-        case 53: // échap
+        case 53: // escape
             state.selectedID = nil
             state.cropRect = nil
         default:
@@ -477,7 +477,7 @@ struct CanvasRepresentable: NSViewRepresentable {
     func updateNSView(_ nsView: EditorCanvasView, context: Context) { nsView.needsDisplay = true }
 }
 
-// MARK: - Barre d'outils (intégrée à la barre de titre)
+// MARK: - Toolbar (inside the title bar)
 
 struct EditorView: View {
     @ObservedObject var state: EditorState
@@ -525,7 +525,7 @@ struct EditorView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            // Outils : contrôle segmenté natif.
+            // Tools: native segmented control.
             Picker("", selection: $state.tool) {
                 ForEach(EditorTool.allCases) { tool in
                     Image(systemName: tool.symbol)
@@ -540,7 +540,7 @@ struct EditorView: View {
                 if tool != .select { state.selectedID = nil }
             }
 
-            // Couleur : pastilles + sélecteur de couleur système.
+            // Color: swatches + system color picker.
             HStack(spacing: 4) {
                 ForEach(Array(EditorPalette.colors.enumerated()), id: \.offset) { _, color in
                     colorButton(color)
@@ -589,7 +589,7 @@ struct EditorView: View {
         }
         .buttonStyle(.bordered)
         .controlSize(.large)
-        .padding(.leading, 84) // place pour les boutons de fenêtre
+        .padding(.leading, 84) // room for the window buttons
         .padding(.trailing, 14)
         .frame(height: 60)
         .background(WindowDragArea())
@@ -619,7 +619,7 @@ struct EditorView: View {
     }
 }
 
-/// Contrôle de zoom en bas à droite : −, pourcentage (clic = ajuster), +.
+/// Zoom control at the bottom right: −, percentage (click = fit), +.
 struct ZoomControl: View {
     @ObservedObject var state: EditorState
     let canvas: EditorCanvasView
@@ -667,7 +667,7 @@ struct ZoomControl: View {
     }
 }
 
-// MARK: - Fenêtre
+// MARK: - Window
 
 @MainActor
 final class EditorWindowController: NSWindowController, NSWindowDelegate {

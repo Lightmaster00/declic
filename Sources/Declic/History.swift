@@ -2,7 +2,7 @@ import AppKit
 import AVFoundation
 import SwiftUI
 
-// MARK: - Stockage
+// MARK: - Storage
 
 struct HistoryItem: Codable, Identifiable, Equatable {
     enum Kind: String, Codable {
@@ -20,7 +20,7 @@ struct HistoryItem: Codable, Identifiable, Equatable {
     var isImage: Bool { kind == .screenshot }
 }
 
-/// Historique des captures, conservé dans ~/Library/Application Support/Déclic/History.
+/// Capture history, stored in ~/Library/Application Support/Declic/History.
 @MainActor
 final class HistoryStore: ObservableObject {
     static let shared = HistoryStore()
@@ -67,7 +67,7 @@ final class HistoryStore: ObservableObject {
             try FileManager.default.copyItem(at: source, to: url(for: item))
             insert(item)
         } catch {
-            NSLog("Declic: historique : \(error)")
+            NSLog("Declic: history: \(error)")
         }
     }
 
@@ -90,7 +90,7 @@ final class HistoryStore: ObservableObject {
         save()
     }
 
-    /// Supprime les éléments trop anciens (durée réglable) ou en trop.
+    /// Removes items that are too old (configurable) or over the limit.
     func prune() {
         let days = Prefs.shared.historyDays
         var removed: [HistoryItem] = []
@@ -157,7 +157,7 @@ final class HistoryStore: ObservableObject {
         PinManager.shared.pin(image: image, scale: CGFloat(item.scale), origin: nil)
     }
 
-    /// Aperçu (double-clic).
+    /// Preview (double click).
     func open(_ item: HistoryItem) {
         if let image = image(for: item) {
             EditorWindowController.open(image: image, scale: CGFloat(item.scale))
@@ -167,7 +167,7 @@ final class HistoryStore: ObservableObject {
     }
 }
 
-// MARK: - Vignettes
+// MARK: - Thumbnails
 
 @MainActor
 final class ThumbnailCache {
@@ -193,7 +193,7 @@ final class ThumbnailCache {
     }
 }
 
-// MARK: - Fenêtre
+// MARK: - Window
 
 enum HistoryFilter: String, CaseIterable, Identifiable {
     case all, screenshots, recordings

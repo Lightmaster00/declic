@@ -2,16 +2,16 @@ import AppKit
 import Security
 import SwiftUI
 
-/// Mises à jour automatiques depuis les « Releases » GitHub du projet.
+/// Automatic updates from the project's GitHub Releases.
 ///
-/// - Au lancement puis toutes les 24 h (si l'option est active), Déclic interroge
-///   `api.github.com/repos/<dépôt>/releases/latest`.
-/// - Si la version publiée est plus récente, une fenêtre propose de l'installer.
-/// - L'archive `.zip` de la release est téléchargée, l'app qu'elle contient doit porter
-///   la même signature que l'app installée (sinon elle est refusée), puis elle remplace
-///   l'app en place et Déclic redémarre. Rien ne s'ouvre dans le Terminal.
+/// - At launch and every 24 h (when enabled), Déclic queries
+/// `api.github.com/repos/<repo>/releases/latest`.
+/// - If the published version is newer, a dialog offers to install it.
+/// - The release's `.zip` is downloaded; the app inside must carry
+/// the same signature as the installed app (otherwise it's rejected), then it replaces
+/// the app in place and Déclic relaunches. Nothing opens in Terminal.
 ///
-/// Le dépôt vient de la clé `DeclicGitHubRepo` de l'Info.plist (« propriétaire/dépôt »).
+/// The repository comes from the `DeclicGitHubRepo` Info.plist key ("owner/repo").
 @MainActor
 enum Updater {
     struct Release {
@@ -53,9 +53,9 @@ enum Updater {
     private static var checking = false
     private static var installing = false
 
-    // MARK: Vérification
+    // MARK: Checking
 
-    /// À appeler au lancement : première vérification après quelques secondes, puis toutes les 24 h.
+    /// Call at launch: first check after a few seconds, then every 24 h.
     static func startAutomaticChecks() {
         guard isConfigured else { return }
         Task { @MainActor in
@@ -70,7 +70,7 @@ enum Updater {
         }
     }
 
-    /// Menu « Rechercher des mises à jour… ».
+    /// "Check for Updates…" menu item.
     static func checkNow() {
         Task { await check(userInitiated: true) }
     }
@@ -101,7 +101,7 @@ enum Updater {
         request.setValue("Declic-Updater/\(currentVersion)", forHTTPHeaderField: "User-Agent")
         request.timeoutInterval = 20
         let (data, response) = try await URLSession.shared.data(for: request)
-        if let http = response as? HTTPURLResponse, http.statusCode == 404 { return nil } // aucune release
+        if let http = response as? HTTPURLResponse, http.statusCode == 404 { return nil } // no release yet
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let tag = json["tag_name"] as? String else { return nil }
         if json["draft"] as? Bool == true || json["prerelease"] as? Bool == true { return nil }
@@ -116,7 +116,7 @@ enum Updater {
         return Release(version: version, notes: json["body"] as? String ?? "", assetURL: download, pageURL: page)
     }
 
-    /// Compare deux versions « 1.2.10 » composante par composante.
+    /// Compares two versions like "1.2.10" component by component.
     static func isNewer(_ a: String, than b: String) -> Bool {
         let pa = a.split(separator: ".").map { Int($0.filter(\.isNumber)) ?? 0 }
         let pb = b.split(separator: ".").map { Int($0.filter(\.isNumber)) ?? 0 }
@@ -128,7 +128,7 @@ enum Updater {
         return false
     }
 
-    // MARK: Fenêtres
+    // MARK: Dialogs
 
     private static func showUpToDate() {
         let alert = NSAlert()
@@ -174,22 +174,22 @@ enum Updater {
                 .appendingPathComponent("Declic-update-\(UUID().uuidString)", isDirectory: true)
             try FileManager.default.createDirectory(at: work, withIntermediateDirectories: true)
 
-            // 1. Téléchargement.
+            // 1. Download.
             let (downloaded, _) = try await URLSession.shared.download(from: release.assetURL)
             let zip = work.appendingPathComponent("update.zip")
             try FileManager.default.moveItem(at: downloaded, to: zip)
 
-            // 2. Décompression.
+            // 2. Unzip.
             progress.update(S.installingUpdate)
             let extracted = work.appendingPathComponent("extracted", isDirectory: true)
             try await run("/usr/bin/ditto", ["-x", "-k", zip.path, extracted.path])
             guard let newApp = try FileManager.default.contentsOfDirectory(at: extracted, includingPropertiesForKeys: nil)
                 .first(where: { $0.pathExtension == "app" }) else { throw UpdateError.badArchive }
 
-            // 3. Même signature que l'app actuelle, sinon on refuse.
+            // 3. Same signature as the current app, otherwise refuse.
             guard signatureMatches(newApp) else { throw UpdateError.badSignature }
 
-            // 4. Remplacement de l'app en place, puis redémarrage.
+            // 4. Replace the app in place, then relaunch.
             let current = Bundle.main.bundleURL
             do {
                 _ = try FileManager.default.replaceItemAt(current, withItemAt: newApp,
@@ -215,8 +215,8 @@ enum Updater {
         }
     }
 
-    /// La nouvelle app doit satisfaire l'exigence de signature de l'app en cours
-    /// (même certificat, même identifiant) : une archive modifiée est refusée.
+    /// The new app must satisfy the running app's designated requirement
+    /// (same certificate, same identifier): a tampered archive is rejected.
     private static func signatureMatches(_ app: URL) -> Bool {
         var selfCode: SecCode?
         guard SecCodeCopySelf([], &selfCode) == errSecSuccess, let selfCode else { return false }
@@ -232,7 +232,7 @@ enum Updater {
         return SecStaticCodeCheckValidity(newCode, flags, requirement) == errSecSuccess
     }
 
-    /// Relance l'app une fois celle-ci quittée.
+    /// Relaunches the app once it has quit.
     private static func relaunch(_ app: URL) {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/bin/sh")
@@ -258,7 +258,7 @@ enum Updater {
     }
 }
 
-// MARK: - Progression
+// MARK: - Progress
 
 private final class UpdateProgressModel: ObservableObject {
     @Published var text = ""

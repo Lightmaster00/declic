@@ -2,11 +2,11 @@ import CoreGraphics
 import Foundation
 @testable import Declic
 
-/// Générateur de contenus factices (niveaux de gris) pour tester l'assemblage.
+/// Fake grayscale content generator for stitching tests.
 struct Synthetic {
     var rng = SplitMix(seed: 1)
 
-    /// Document de `height` lignes : lignes de « texte » aléatoires alternant avec des interlignes unies.
+    /// Document of `height` rows: random "text" rows alternating with plain spacing.
     mutating func document(width: Int, height: Int) -> [[UInt8]] {
         (0..<height).map { y in
             if (y / 14) % 2 == 0 {
@@ -35,7 +35,7 @@ struct Synthetic {
         return RawFrame(width: w, height: h, bytesPerRow: w * 4, data: data)
     }
 
-    /// Niveaux de gris d'une image (canal rouge), ligne par ligne.
+    /// Grayscale values of an image (red channel), row by row.
     static func gray(_ image: CGImage) -> [[UInt8]] {
         let w = image.width, h = image.height
         guard let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
@@ -48,7 +48,7 @@ struct Synthetic {
     }
 }
 
-/// Générateur pseudo-aléatoire reproductible.
+/// Reproducible pseudo-random generator.
 struct SplitMix {
     var state: UInt64
     init(seed: UInt64) { state = seed }

@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// Images épinglées : fenêtres flottantes qui restent au-dessus de tout jusqu'à leur fermeture.
+/// Pinned images: floating windows that stay on top until closed.
 @MainActor
 final class PinManager {
     static let shared = PinManager()
@@ -65,8 +65,8 @@ struct PinToolbar: View {
     }
 }
 
-/// Vue de l'image épinglée : glisser pour déplacer, coin bas-droit pour redimensionner,
-/// pincer ou ⌘ + molette pour zoomer, ⌥ + molette pour l'opacité, Échap pour fermer.
+/// Pinned image view: drag to move, bottom-right corner to resize,
+/// pinch or ⌘ + scroll to zoom, ⌥ + scroll for opacity, Escape to close.
 final class PinImageView: NSView {
     var image: CGImage?
     var onHover: ((Bool) -> Void)?
@@ -128,7 +128,7 @@ final class PinImageView: NSView {
         ctx.strokePath()
 
         if hovering {
-            // Poignée de redimensionnement.
+            // Resize handle.
             ctx.setStrokeColor(NSColor.white.withAlphaComponent(0.9).cgColor)
             ctx.setShadow(offset: .zero, blur: 2, color: NSColor.black.withAlphaComponent(0.6).cgColor)
             ctx.setLineWidth(1.5)
@@ -161,7 +161,7 @@ final class PinImageView: NSView {
         let aspect = CGFloat(image.width) / CGFloat(image.height)
         let width = max(80, start.frame.width + (m.x - start.mouse.x))
         let height = width / aspect
-        // Le coin haut-gauche reste fixe.
+        // The top-left corner stays put.
         let frame = CGRect(x: start.frame.minX, y: start.frame.maxY - height, width: width, height: height)
         window.setFrame(frame, display: true)
         window.invalidateShadow()
@@ -201,7 +201,7 @@ final class PinImageView: NSView {
     override func keyDown(with event: NSEvent) {
         let cmd = event.modifierFlags.contains(.command)
         switch event.keyCode {
-        case 53, 51, 117: onClose?() // échap, effacement
+        case 53, 51, 117: onClose?() // escape, delete
         case 13 where cmd: onClose?() // ⌘W
         case 8 where cmd: onCopy?() // ⌘C
         default: super.keyDown(with: event)
@@ -276,7 +276,7 @@ final class PinController {
 
     private func setToolbarVisible(_ visible: Bool) {
         guard let host = toolbarHost else { return }
-        // Masque la barre si l'épingle est trop petite pour l'afficher.
+        // Hides the bar when the pinned image is too small for it.
         let fits = imageView.bounds.width >= host.frame.width && imageView.bounds.height >= host.frame.height
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.15

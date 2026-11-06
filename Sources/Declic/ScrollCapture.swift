@@ -5,9 +5,9 @@ import CoreMedia
 import ScreenCaptureKit
 import SwiftUI
 
-// MARK: - Images brutes
+// MARK: - Raw frames
 
-/// Une image BGRA de la fenêtre.
+/// A BGRA frame of the window.
 struct RawFrame {
     let width: Int
     let height: Int
@@ -32,7 +32,7 @@ struct RawFrame {
         self.init(width: w, height: h, bytesPerRow: bpr, data: Data(bytes: base, count: bpr * h))
     }
 
-    /// Copie d'une sous-zone (en pixels, origine en haut à gauche).
+    /// Copy of a sub-area (in pixels, origin at top left).
     func cropped(x: Int, y: Int, width cw: Int, height ch: Int) -> RawFrame {
         let outBPR = cw * 4
         var out = Data(count: outBPR * ch)
@@ -53,20 +53,20 @@ struct RawFrame {
     }
 }
 
-// MARK: - Assemblage
+// MARK: - Stitching
 
 enum ScrollResult {
-    /// Rien n'a bougé.
+    /// Nothing moved.
     case unchanged
-    /// Nouvelles lignes ajoutées.
+    /// New rows were added.
     case added
-    /// Le contenu a changé mais on n'a pas retrouvé le décalage (défilement trop rapide).
+    /// Content changed but no offset was found (scrolled too fast).
     case lost
-    /// Hauteur maximale atteinte.
+    /// Maximum height reached.
     case full
 }
 
-/// Une image (rognée) prête à être comparée : par ligne, la luminance moyenne de 64 blocs.
+/// A (cropped) frame ready for comparison: per row, the mean luminance of 64 blocks.
 struct ScrollFrame {
     let raw: RawFrame
     let signature: [UInt8]
@@ -75,41 +75,41 @@ struct ScrollFrame {
     var height: Int { raw.height }
 }
 
-/// Assemble les images successives d'une zone qui défile, vers le bas comme vers le haut.
+/// Stitches successive frames of a scrolling area, scrolling down as well as up.
 ///
-/// - Pour chaque image, on cherche le décalage vertical `d` qui aligne ses lignes
-///   avec l'image de référence (en ignorant en-têtes et pieds de page fixes).
-/// - Si plusieurs décalages se valent (listes aux lignes semblables), on garde
-///   celui qui prolonge le mieux le mouvement précédent.
-/// - Les colonnes du bord qui ne suivent pas le défilement (barre de défilement,
-///   boutons flottants) sont exclues de la comparaison puis rognées du résultat.
+/// - For each frame, find the vertical offset `d` that aligns its rows
+/// with the reference frame (ignoring fixed headers and footers).
+/// - When several offsets are equally good (lists with similar rows), keep
+/// the one that best continues the previous motion.
+/// - Edge columns that don't follow the scroll (scroll bar,
+/// floating buttons) are excluded from matching, then trimmed from the result.
 final class CoreStitcher {
     static let blocks = 64
     static let maxHeight = 40_000
 
-    /// Morceaux assemblés, positionnés sur une toile verticale (y vers le bas).
-    /// Ils sont peints dans l'ordre : un morceau récent recouvre un ancien.
+    /// Stitched pieces, placed on a vertical canvas (y down).
+    /// They're painted in order: a newer piece covers an older one.
     private var pieces: [(y: Int, image: CGImage)] = []
     private var first: ScrollFrame?
     private var reference: ScrollFrame?
-    /// Image qui a fourni le bas de la toile : c'est d'elle que vient le pied de page
-    /// (sinon, en remontant, on collerait sous la toile le bas d'une image plus haute).
+    /// Frame that provided the bottom of the canvas: the footer comes from it
+    /// (otherwise, when scrolling up, the bottom of a higher frame would be pasted below).
     private var bottomFrame: ScrollFrame?
-    /// Haut et bas de la toile (le pied de page fixe est ajouté sous `canvasMax`).
+    /// Top and bottom of the canvas (the fixed footer is added below `canvasMax`).
     private var canvasMin = 0
     private var canvasMax = 0
-    /// Position (sur la toile) de la ligne 0 de l'image de référence.
+    /// Canvas position of row 0 of the reference frame.
     private var viewTop = 0
-    /// Nombre de lignes d'en-tête fixe au sommet de la toile.
+    /// Number of fixed header rows at the top of the canvas.
     private var topHeader = 0
     private var footer = 0
     private var scrolled = false
     private(set) var previousShift = 0
     private var badBlocks = [Bool](repeating: false, count: CoreStitcher.blocks)
 
-    /// Décalage attendu en pixels (défilement automatique), 0 si inconnu.
+    /// Expected offset in pixels (auto-scroll), 0 if unknown.
     var expectedShift = 0
-    /// Détails du dernier calcul (journal de diagnostic).
+    /// Details of the last computation (diagnostic log).
     private(set) var lastInfo = ""
 
     var width: Int { reference?.width ?? 0 }
@@ -144,7 +144,7 @@ final class CoreStitcher {
         return ScrollFrame(raw: raw, signature: signature, informative: informative)
     }
 
-    /// Compare une image à la référence et ajoute les nouvelles lignes.
+    /// Compares a frame with the reference and adds the new rows.
     func process(_ cur: ScrollFrame) -> ScrollResult {
         guard let ref = reference else {
             first = cur
@@ -169,10 +169,10 @@ final class CoreStitcher {
                 }
                 let sameTolerance = good.count
 
-                // Lignes fixes en haut et en bas (en-tête / pied de page collants).
+                // Fixed rows at the top and bottom (sticky header / footer).
                 var top = 0
                 while top < h, diff(top, top) <= sameTolerance { top += 1 }
-                if top == h { return .unchanged } // rien n'a bougé
+                if top == h { return .unchanged } // nothing moved
                 var bottom = 0
                 while bottom < h - top, diff(h - 1 - bottom, h - 1 - bottom) <= sameTolerance { bottom += 1 }
 
@@ -182,20 +182,20 @@ final class CoreStitcher {
                 guard usable > minOverlap + 1 else { return .lost }
                 let maxShift = usable - minOverlap
 
-                // Lignes utiles (avec du détail) de l'image courante.
+                // Informative rows (with detail) of the current frame.
                 var rows: [Int] = []
                 rows.reserveCapacity(usable)
                 for y in top..<(h - bottom) where cur.informative[y] { rows.append(y) }
                 lastInfo += " rows=\(rows.count)"
                 guard rows.count >= 8 else { return .lost }
 
-                /// Lignes y de l'image courante telles que y et y + d sont dans la zone qui défile.
+                /// Rows y of the current frame such that y and y + d are in the scrolling area.
                 func range(_ d: Int) -> (lo: Int, hi: Int) {
                     (max(top, top - d), min(h - bottom, h - bottom - d))
                 }
 
-                /// Coût moyen (×100) du décalage d (positif : défilement vers le bas,
-                /// négatif : vers le haut), sur un échantillon de lignes.
+                /// Mean cost (×100) of offset d (positive: scrolling down,
+                /// negative: scrolling up), over a sample of rows.
                 func cost(_ d: Int, stride: Int) -> Int? {
                     let (lo, hi) = range(d)
                     var sum = 0
@@ -213,7 +213,7 @@ final class CoreStitcher {
                     return count >= 8 ? sum * 100 / count : nil
                 }
 
-                // 1) Tous les décalages, dans les deux sens, sur ~150 lignes : rapide même pour une grande fenêtre.
+                // 1) Every offset, both directions, on ~150 rows: fast even for a large window.
                 let coarseStride = max(1, rows.count / 150)
                 var coarse: [(d: Int, c: Int)] = []
                 coarse.reserveCapacity(maxShift * 2)
@@ -222,7 +222,7 @@ final class CoreStitcher {
                 }
                 guard let coarseBest = coarse.map({ $0.c }).min() else { return .lost }
 
-                // 2) Les meilleurs candidats, sur toutes les lignes.
+                // 2) The best candidates, on every row.
                 let candidates = coarse
                     .filter { $0.c <= coarseBest + coarseBest / 2 + good.count * 100 }
                     .sorted { $0.c < $1.c }
@@ -235,7 +235,7 @@ final class CoreStitcher {
                 lastInfo += " best=\(bestCost.map(String.init) ?? "-") limit=\(good.count * 800)"
                 guard let best = bestCost, best <= good.count * 800 else { return .lost }
 
-                // Décalages presque aussi bons : on garde le plus cohérent avec le mouvement.
+                // Nearly-as-good offsets: keep the one most consistent with the motion.
                 let threshold = best + best * 15 / 100 + good.count * 50
                 let near = fine.filter { $0.c <= threshold }.map { $0.d }
                 let hint = expectedShift > 0 ? expectedShift : previousShift
@@ -248,7 +248,7 @@ final class CoreStitcher {
                 lastInfo += " shift=\(shift) near=\(near.count)"
                 guard shift != 0 else { return .lost }
 
-                // Colonnes du bord qui ne suivent pas le défilement (barre de défilement…) → exclues.
+                // Edge columns that don't follow the scroll (scroll bar…) → excluded.
                 var errors = [Int](repeating: 0, count: n)
                 var counted = 0
                 let valid = range(shift)
@@ -271,7 +271,7 @@ final class CoreStitcher {
 
                 var end = h - footer
                 if !scrolled {
-                    // Premier défilement : la toile commence avec l'image de départ, sans son pied de page.
+                    // First scroll: the canvas starts with the first frame, without its footer.
                     scrolled = true
                     footer = bottom
                     end = h - footer
@@ -286,7 +286,7 @@ final class CoreStitcher {
                 }
                 viewTop += shift
 
-                // Nouveau contenu en bas.
+                // New content at the bottom.
                 if viewTop + end > canvasMax {
                     let start = max(0, canvasMax - viewTop)
                     if end > start, let image = Self.image(from: cur.raw, rows: start..<end) {
@@ -295,7 +295,7 @@ final class CoreStitcher {
                     canvasMax = viewTop + end
                     bottomFrame = cur
                 }
-                // Nouveau contenu en haut : on reprend aussi l'en-tête, qui remonte au sommet de la toile.
+                // New content at the top: the header is taken too and moves to the top of the canvas.
                 if viewTop + top < canvasMin + topHeader {
                     let stop = min(end, canvasMin + topHeader - viewTop)
                     if stop > 0, let image = Self.image(from: cur.raw, rows: 0..<stop) {
@@ -310,7 +310,7 @@ final class CoreStitcher {
         }
     }
 
-    /// Colonnes à garder (sans les bords exclus).
+    /// Columns to keep (without the excluded edges).
     private var keptColumns: Range<Int> {
         let w = width
         let edges = Self.blockEdges(width: w)
@@ -320,7 +320,7 @@ final class CoreStitcher {
         return right > left ? left..<right : 0..<w
     }
 
-    /// Image finale : toile assemblée + pied de page.
+    /// Final image: stitched canvas + footer.
     func compose() -> CGImage? {
         guard let reference else { return nil }
         guard scrolled else {
@@ -336,7 +336,7 @@ final class CoreStitcher {
         return full.cropping(to: CGRect(x: keep.lowerBound, y: 0, width: keep.count, height: full.height)) ?? full
     }
 
-    /// Petite version de la zone en cours (autour de la position actuelle), pour l'aperçu en direct.
+    /// Small version of the current area (around the current position), for the live preview.
     func preview(width: Int) -> CGImage? {
         let sourceWidth = self.width
         guard sourceWidth > 0 else { return nil }
@@ -357,7 +357,7 @@ final class CoreStitcher {
         render(parts: pieces, from: lo, to: hi, footer: footer, width: width, scale: scale)
     }
 
-    /// Peint les morceaux (dans l'ordre) sur la plage [lo, hi) de la toile, puis le pied de page.
+    /// Paints the pieces (in order) over canvas range [lo, hi), then the footer.
     private func render(parts: [(y: Int, image: CGImage)], from lo: Int, to hi: Int,
                         footer: CGImage?, width: Int, scale: CGFloat) -> CGImage? {
         let rows = hi - lo + (footer?.height ?? 0)
@@ -365,7 +365,7 @@ final class CoreStitcher {
         guard rows > 0, let ctx = Self.context(width: width, height: height) else { return nil }
         ctx.interpolationQuality = scale == 1 ? .none : .medium
         let canvasWidth = CGFloat(self.width > 0 ? self.width : width) * scale
-        // y de la toile (vers le bas) → y du contexte (vers le haut).
+        // canvas y (down) → context y (up).
         func rect(_ y: Int, _ h: Int) -> CGRect {
             CGRect(x: 0, y: CGFloat(height) - CGFloat(y - lo + h) * scale, width: canvasWidth, height: CGFloat(h) * scale)
         }
@@ -378,7 +378,7 @@ final class CoreStitcher {
         return ctx.makeImage()
     }
 
-    // MARK: Outils
+    // MARK: Tools
 
     static let bitmapInfo = CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
 
@@ -409,11 +409,11 @@ final class CoreStitcher {
     }
 }
 
-/// Capture défilante d'une fenêtre : repère automatiquement la zone qui défile
-/// (en ignorant barre d'outils, barre latérale, etc.) puis assemble son contenu.
+/// Scrolling capture of a window: finds the scrolling area automatically
+/// (ignoring the toolbar, sidebar, etc.) and stitches its content.
 final class WindowScrollStitcher {
     private var firstRaw: RawFrame?
-    /// Zone qui défile, en pixels (origine en haut à gauche).
+    /// Scrolling area, in pixels (origin at top left).
     private(set) var crop: (x: Int, y: Int, w: Int, h: Int)?
     private var core = CoreStitcher()
     private var failedDetections = 0
@@ -421,11 +421,11 @@ final class WindowScrollStitcher {
 
     var totalHeight: Int { core.totalHeight }
 
-    /// Position du pointeur dans l'image (pixels, origine en haut à gauche), si elle est sur la fenêtre.
-    /// La zone qui défile choisie est celle sous le pointeur (ex. le message dans Mail, pas la liste).
+    /// Pointer position in the frame (pixels, origin at top left), when it's over the window.
+    /// The scrolling area picked is the one under the pointer (e.g. the message in Mail, not the list).
     var focus: (x: Int, y: Int)?
 
-    /// Décalage attendu en pixels pendant le défilement automatique.
+    /// Expected offset in pixels during auto-scroll.
     var expectedShift: Int {
         get { core.expectedShift }
         set { core.expectedShift = newValue }
@@ -438,15 +438,15 @@ final class WindowScrollStitcher {
         }
         guard raw.width == first.width, raw.height == first.height else { return .unchanged }
         if crop == nil {
-            // La zone qui défile doit être assez grande (sinon c'est un survol, un curseur qui clignote…).
+            // The scrolling area must be large enough (otherwise it's a hover effect, a blinking caret…).
             guard let changed = Self.changedBox(first, raw, focus: focus),
                   changed.w >= raw.width / 4, changed.h >= raw.height / 4 else { return .unchanged }
-            // Deux panneaux côte à côte peuvent changer en même temps (ex. Mail : la liste et le
-            // message) : on ne garde que les colonnes qui défilent comme celles sous le pointeur.
+            // Two side-by-side panes can change at once (e.g. Mail: the list and the
+            // message): only keep the columns that scroll like the ones under the pointer.
             let box = Self.scrollingColumns(first, raw, in: changed, focus: focus) ?? changed
             guard box.w >= raw.width / 4 else { return .unchanged }
-            // On vérifie que c'est bien un défilement (et pas une image qui se charge, une animation,
-            // un bandeau qui apparaît…) : sinon, après quelques essais, on repart de l'image actuelle.
+            // Make sure it really is a scroll (not an image loading, an animation,
+            // a banner appearing…): otherwise, after a few tries, restart from the current frame.
             let trial = CoreStitcher()
             trial.expectedShift = core.expectedShift
             _ = trial.process(CoreStitcher.makeFrame(first.cropped(x: box.x, y: box.y, width: box.w, height: box.h)))
@@ -493,12 +493,12 @@ final class WindowScrollStitcher {
         return core.preview(width: width)
     }
 
-    /// Rectangle englobant les pixels qui ont changé entre deux images,
-    /// étendu aux lignes unies voisines (marges de la vue qui défile).
+    /// Bounding box of the pixels that changed between two frames,
+    /// extended to neighbouring plain rows (margins of the scrolling view).
     static func changedBox(_ a: RawFrame, _ b: RawFrame,
                            focus: (x: Int, y: Int)? = nil) -> (x: Int, y: Int, w: Int, h: Int)? {
         let w = a.width, h = a.height
-        // 1) Grille de cellules de 16 px : cellules où des pixels ont changé.
+        // 1) Grid of 16 px cells: cells where pixels changed.
         let cell = 16
         let gw = (w + cell - 1) / cell, gh = (h + cell - 1) / cell
         var grid = [Int](repeating: 0, count: gw * gh)
@@ -520,7 +520,7 @@ final class WindowScrollStitcher {
             }
         }
 
-        // 2) Régions connexes (en comblant les petits trous : interlignes, marges).
+        // 2) Connected regions (bridging small gaps: line spacing, margins).
         var label = [Int](repeating: -1, count: gw * gh)
         var regions: [(cells: [Int], count: Int)] = []
         let reach = 2
@@ -550,8 +550,8 @@ final class WindowScrollStitcher {
         }
         guard !regions.isEmpty else { return nil }
 
-        // 3) Parmi les régions assez grandes pour être une vue qui défile : celle sous le pointeur
-        //    (ou la plus proche), sinon la plus grande.
+        // 3) Among regions large enough to be a scroll view: the one under the pointer
+        // (or the closest), otherwise the largest.
         func bounds(_ cells: [Int]) -> (minX: Int, maxX: Int, minY: Int, maxY: Int) {
             var x0 = Int.max, x1 = -1, y0 = Int.max, y1 = -1
             for c in cells {
@@ -581,7 +581,7 @@ final class WindowScrollStitcher {
         }
         var (minX, maxX, minY, maxY) = bounds(regions[chosen].cells)
         guard maxX - minX >= 60, maxY - minY >= 60 else { return nil }
-        // Les cellules débordent un peu : on resserre sur les pixels qui ont vraiment changé.
+        // Cells overshoot a little: tighten to the pixels that actually changed.
         a.data.withUnsafeBytes { ra in
             b.data.withUnsafeBytes { rb in
                 let pa = ra.bindMemory(to: UInt8.self)
@@ -610,7 +610,7 @@ final class WindowScrollStitcher {
         }
         guard maxX - minX >= 60, maxY - minY >= 60 else { return nil }
 
-        // Affine les bords au pixel près (l'échantillonnage ci-dessus saute des colonnes/lignes).
+        // Refine edges to the pixel (the sampling above skips columns/rows).
         a.data.withUnsafeBytes { ra in
             b.data.withUnsafeBytes { rb in
                 let pa = ra.bindMemory(to: UInt8.self)
@@ -634,7 +634,7 @@ final class WindowScrollStitcher {
             }
         }
 
-        // Étend verticalement sur les lignes unies (fond de la vue) dans les deux images.
+        // Extend vertically over plain rows (view background) in both frames.
         func uniform(_ f: RawFrame, _ p: UnsafeBufferPointer<UInt8>, row: Int) -> Bool {
             var lo = 255, hi = 0
             var x = minX
@@ -660,9 +660,9 @@ final class WindowScrollStitcher {
         return (x0, y0, x1 - x0, y1 - y0)
     }
 
-    /// Dans la zone `box`, sépare les bandes de colonnes qui ont changé (séparées par des colonnes
-    /// identiques : bordure, marge, séparateur). Mesure le défilement de la bande sous le pointeur,
-    /// puis ne garde que les bandes qui ont bougé de la même façon.
+    /// Inside `box`, splits the bands of changed columns (separated by unchanged
+    /// columns: border, margin, divider). Measures the scroll of the band under the pointer,
+    /// then keeps only the bands that moved the same way.
     static func scrollingColumns(_ a: RawFrame, _ b: RawFrame, in box: (x: Int, y: Int, w: Int, h: Int),
                                  focus: (x: Int, y: Int)?) -> (x: Int, y: Int, w: Int, h: Int)? {
         let x0 = box.x, x1 = box.x + box.w, y0 = box.y, y1 = box.y + box.h
@@ -672,7 +672,7 @@ final class WindowScrollStitcher {
                 let pa = ra.bindMemory(to: UInt8.self)
                 let pb = rb.bindMemory(to: UInt8.self)
 
-                // 1) Colonnes qui ont changé.
+                // 1) Changed columns.
                 var changed = [Bool](repeating: false, count: box.w)
                 for x in x0..<x1 {
                     var y = y0
@@ -696,7 +696,7 @@ final class WindowScrollStitcher {
                 }
                 guard bands.count > 1 else { return nil }
 
-                // 2) Bande de référence : sous le pointeur (ou la plus proche), sinon la plus large.
+                // 2) Reference band: under the pointer (or the closest), otherwise the widest.
                 func distance(_ r: Range<Int>, _ x: Int) -> Int {
                     r.contains(x) ? 0 : min(abs(r.lowerBound - x), abs(r.upperBound - 1 - x))
                 }
@@ -707,7 +707,7 @@ final class WindowScrollStitcher {
                     reference = bands.max { $0.count < $1.count }!
                 }
 
-                // 3) Défilement de la bande de référence.
+                // 3) Scroll offset of the reference band.
                 let refFirst = CoreStitcher.makeFrame(a.cropped(x: reference.lowerBound, y: y0,
                                                                 width: reference.count, height: box.h))
                 let refSecond = CoreStitcher.makeFrame(b.cropped(x: reference.lowerBound, y: y0,
@@ -717,7 +717,7 @@ final class WindowScrollStitcher {
                 guard probe.process(refSecond) == .added else { return nil }
                 let d = probe.previousShift
 
-                /// Écart moyen entre la bande décalée de d dans l'image a et la même bande dans b.
+                /// Mean difference between the band shifted by d in frame a and the same band in b.
                 func error(_ r: Range<Int>) -> Int {
                     var sum = 0, count = 0
                     var y = max(y0, y0 - d)
@@ -743,11 +743,11 @@ final class WindowScrollStitcher {
     }
 }
 
-// MARK: - Journal de diagnostic
+// MARK: - Diagnostic log
 
-/// Journal de la capture défilante, pour comprendre un échec : chaque calcul y est noté,
-/// avec les deux premières images analysées.
-/// Build de développement : `<sources>/build/debug/`. Sinon : `~/Library/Logs/Declic/`.
+/// Scrolling capture log, to understand failures: every computation is written there,
+/// along with the first two analysed frames.
+/// Development build: `<sources>/build/debug/`. Otherwise: `~/Library/Logs/Declic/`.
 final class ScrollDebugLog {
     private let folder: URL
     private let handle: FileHandle?
@@ -782,10 +782,10 @@ final class ScrollDebugLog {
     }
 }
 
-// MARK: - Flux
+// MARK: - Stream
 
-/// Capture la fenêtre ~15 fois par seconde. Les images arrivées pendant un calcul
-/// sont ignorées : la file ne grossit jamais, même pour une très grande fenêtre.
+/// Captures the window ~15 times per second. Frames arriving during a computation
+/// are dropped: the queue never grows, even for a very large window.
 final class ScrollRecorder: NSObject, SCStreamOutput, SCStreamDelegate, @unchecked Sendable {
     private let captureQueue = DispatchQueue(label: "com.lightmaster.declic.scroll.capture")
     private let processQueue = DispatchQueue(label: "com.lightmaster.declic.scroll.process", qos: .userInitiated)
@@ -795,11 +795,11 @@ final class ScrollRecorder: NSObject, SCStreamOutput, SCStreamDelegate, @uncheck
     private var stream: SCStream?
     private var lastPreview: TimeInterval = 0
     private var lostCount = 0
-    /// Fenêtre capturée (coordonnées CG, en points) et échelle, pour situer le pointeur.
+    /// Captured window (CG coordinates, in points) and scale, to locate the pointer.
     var windowFrame: CGRect = .zero
     var pixelScale: CGFloat = 2
 
-    /// (hauteur en pixels, aperçu éventuel, contenu ajouté, défilement trop rapide, hauteur max atteinte)
+    /// (height in pixels, optional preview, content added, scrolled too fast, max height reached)
     var onUpdate: (@Sendable (Int, CGImage?, Bool, Bool, Bool) -> Void)?
 
     func start(filter: SCContentFilter, configuration: SCStreamConfiguration) async throws {
@@ -809,7 +809,7 @@ final class ScrollRecorder: NSObject, SCStreamOutput, SCStreamDelegate, @uncheck
         try await s.startCapture()
     }
 
-    /// Indique le décalage attendu (défilement automatique), ou 0.
+    /// Sets the expected offset (auto-scroll), or 0.
     func setExpectedShift(_ pixels: Int) {
         processQueue.async { self.stitcher.expectedShift = pixels }
     }
@@ -869,7 +869,7 @@ final class ScrollRecorder: NSObject, SCStreamOutput, SCStreamDelegate, @uncheck
     }
 
     func stream(_ stream: SCStream, didStopWithError error: Error) {
-        NSLog("Declic: capture défilante arrêtée : \(error)")
+        NSLog("Declic: scrolling capture stopped: \(error)")
     }
 
     func finish() async -> CGImage? {
@@ -975,10 +975,10 @@ final class ScrollCaptureController {
     private var lastGrowth = Date()
     private let model = ScrollModel()
     private(set) var active = false
-    /// App au premier plan avant la capture : on y revient à la fin.
+    /// Frontmost app before the capture: we return to it at the end.
     private var previousApp: NSRunningApplication?
 
-    /// Raccourci : choisir une fenêtre dans Mission Control, ou terminer la capture en cours.
+    /// Shortcut: pick a window in the gallery, or finish the current capture.
     func start() {
         if recorder != nil { finish(); return }
         guard !active, !CaptureCoordinator.shared.busy else { return }
@@ -992,8 +992,8 @@ final class ScrollCaptureController {
 
     private func begin(_ candidate: WindowCandidate) async {
         do {
-            // Pour pouvoir faire défiler la fenêtre, elle doit être devant les autres.
-            // On reviendra à l'app d'origine une fois la capture terminée.
+            // To scroll the window, it has to be in front of the others.
+            // We'll return to the original app once the capture is done.
             previousApp = NSWorkspace.shared.frontmostApplication
             WindowRaiser.raise(candidate)
             try? await Task.sleep(nanoseconds: 250_000_000)
@@ -1044,7 +1044,7 @@ final class ScrollCaptureController {
         }
     }
 
-    /// Interface placée hors de la fenêtre (elle n'apparaît pas dans la capture).
+    /// Controls placed outside the window (so they don't appear in the capture).
     private func showUI(for candidate: WindowCandidate) {
         let rect = candidate.frame
         let screen = NSScreen.best(for: rect)
@@ -1073,7 +1073,7 @@ final class ScrollCaptureController {
         pp.ignoresMouseEvents = true
         preview.frame = CGRect(origin: .zero, size: pp.frame.size)
         pp.contentView = preview
-        // À droite de l'écran, ou à gauche si la fenêtre occupe ce côté.
+        // On the right of the screen, or on the left if the window covers that side.
         let right = rect.maxX < vf.maxX - previewWidth
         let px = right ? vf.maxX - previewWidth : vf.minX
         pp.setFrameOrigin(CGPoint(x: px, y: vf.midY - previewHeight / 2))
@@ -1085,20 +1085,20 @@ final class ScrollCaptureController {
         }
     }
 
-    // MARK: Défilement automatique
+    // MARK: Auto-scroll
 
     private func toggleAutoScroll() {
         if autoTimer != nil {
             stopAutoScroll()
             return
         }
-        // Envoyer des événements de défilement demande l'autorisation d'accessibilité.
+        // Posting scroll events requires Accessibility permission.
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         guard AXIsProcessTrustedWithOptions(options) else { return }
         guard let candidate, let recorder else { return }
 
-        // On fait défiler sous le pointeur s'il est sur la fenêtre (la zone choisie, ex. le message
-        // dans Mail) ; sinon on le place au centre (coordonnées CG, origine en haut à gauche).
+        // Scroll under the pointer if it's over the window (the chosen area, e.g. the message
+        // in Mail); otherwise move it to the center (CG coordinates, origin at top left).
         let f = candidate.window.frame
         var point = CGPoint(x: f.midX, y: f.midY)
         if let mouse = CGEvent(source: nil)?.location, f.insetBy(dx: 4, dy: 4).contains(mouse) {
@@ -1113,7 +1113,7 @@ final class ScrollCaptureController {
         autoTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { _ in
             MainActor.assumeIsolated {
                 let controller = ScrollCaptureController.shared
-                // Fin de page : plus rien n'est ajouté depuis un moment.
+                // End of page: nothing has been added for a while.
                 if Date().timeIntervalSince(controller.lastGrowth) > 2.4 {
                     controller.stopAutoScroll()
                     controller.finish()
@@ -1134,7 +1134,7 @@ final class ScrollCaptureController {
         recorder?.setExpectedShift(0)
     }
 
-    // MARK: Fin
+    // MARK: End
 
     private func hideUI() {
         stopAutoScroll()

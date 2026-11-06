@@ -2,13 +2,13 @@ import AppKit
 import AVKit
 import SwiftUI
 
-/// Contenu affiché dans la fenêtre d'aperçu.
+/// Content shown in the preview window.
 enum PreviewContent {
     case image(CGImage, scale: CGFloat, origin: CGRect?)
     case video(URL, isGIF: Bool)
 }
 
-/// GIF animé (NSImageView anime les GIF nativement).
+/// Animated GIF (NSImageView animates GIFs natively).
 struct AnimatedImageView: NSViewRepresentable {
     let url: URL
 
@@ -129,7 +129,7 @@ struct PreviewView: View {
         .ignoresSafeArea()
         .environment(\.colorScheme, .dark)
         .background(
-            // Raccourcis : Échap / Espace pour fermer, ⌘C pour copier.
+            // Shortcuts: Escape / Space to close, ⌘C to copy.
             ZStack {
                 Button("") { window()?.close() }.keyboardShortcut(.escape, modifiers: [])
                 Button("") { window()?.close() }.keyboardShortcut(.space, modifiers: [])

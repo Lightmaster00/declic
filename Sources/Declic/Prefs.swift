@@ -51,7 +51,7 @@ enum RecordModeChoice: String {
     case area, fullscreen, window
 }
 
-/// Clés UserDefaults (partagées avec les @AppStorage de la fenêtre de réglages).
+/// UserDefaults keys (shared with the settings window's @AppStorage).
 enum PrefKey {
     static let saveFolder = "saveFolder.v2"
     static let filePrefix = "filePrefix"
@@ -98,7 +98,7 @@ enum PrefKey {
     static let skippedVersion = "updates.skippedVersion"
 }
 
-/// Lecture des réglages (la fenêtre de réglages écrit directement dans UserDefaults).
+/// Settings reader (the settings window writes straight to UserDefaults).
 @MainActor
 final class Prefs {
     static let shared = Prefs()
@@ -145,9 +145,9 @@ final class Prefs {
         ])
     }
 
-    // MARK: Général
+    // MARK: General
 
-    /// Dossier de sauvegarde : le Bureau par défaut.
+    /// Save folder: the Desktop by default.
     var saveFolder: URL {
         get {
             if let path = d.string(forKey: PrefKey.saveFolder), !path.isEmpty {
@@ -171,7 +171,7 @@ final class Prefs {
         set { d.set(newValue, forKey: PrefKey.playSound) }
     }
 
-    // MARK: Après la capture
+    // MARK: After capture
 
     var afterQuickAccess: Bool { d.bool(forKey: PrefKey.afterQuickAccess) }
     var afterCopy: Bool { d.bool(forKey: PrefKey.afterCopy) }
@@ -198,13 +198,13 @@ final class Prefs {
     var windowPadding: CGFloat { CGFloat(d.double(forKey: PrefKey.windowPadding)) }
     var windowColor: NSColor { NSColor(hex: d.string(forKey: PrefKey.windowColor) ?? "") ?? .systemIndigo }
 
-    // MARK: Accès rapide
+    // MARK: Quick Access
 
     var qaPosition: QuickAccessPosition { QuickAccessPosition(rawValue: d.string(forKey: PrefKey.qaPosition) ?? "") ?? .bottomLeft }
     var qaSize: QuickAccessSize { QuickAccessSize(rawValue: d.string(forKey: PrefKey.qaSize) ?? "") ?? .medium }
     var qaAutoClose: Int { d.integer(forKey: PrefKey.qaAutoClose) }
 
-    // MARK: Enregistrement
+    // MARK: Recording
 
     var recFPS: Int { max(10, d.integer(forKey: PrefKey.recFPS)) }
     var recCursor: Bool { d.bool(forKey: PrefKey.recCursor) }
@@ -225,7 +225,7 @@ final class Prefs {
     var gifFPS: Int { max(5, d.integer(forKey: PrefKey.gifFPS)) }
     var gifWidth: Int { max(320, d.integer(forKey: PrefKey.gifWidth)) }
 
-    // MARK: Historique
+    // MARK: History
 
     var historyEnabled: Bool { d.bool(forKey: PrefKey.historyEnabled) }
     var historyDays: Int { d.integer(forKey: PrefKey.historyDays) }

@@ -3,7 +3,7 @@ import Carbon
 import Combine
 import SwiftUI
 
-/// Actions accessibles par raccourci global.
+/// Actions available through a global shortcut.
 enum ShortcutAction: String, CaseIterable, Identifiable {
     case captureArea, captureFullscreen, captureWindow, scrollingCapture, recordVideo, history
 
@@ -44,7 +44,7 @@ enum ShortcutAction: String, CaseIterable, Identifiable {
     }
 }
 
-/// Combinaison de touches (code de touche + modificateurs Carbon).
+/// Key combination (key code + Carbon modifiers).
 struct KeyCombo: Equatable {
     var keyCode: Int
     var modifiers: Int
@@ -58,7 +58,7 @@ struct KeyCombo: Equatable {
         return s + KeyNames.name(for: keyCode)
     }
 
-    /// Caractère utilisable comme équivalent clavier de menu (nil pour les touches spéciales).
+    /// Character usable as a menu key equivalent (nil for special keys).
     var menuKey: String? {
         let n = KeyNames.name(for: keyCode)
         guard n.count == 1 else { return nil }
@@ -95,7 +95,7 @@ struct KeyCombo: Equatable {
         if flags.contains(.shift) { mods |= shiftKey }
         if flags.contains(.command) { mods |= cmdKey }
         let code = Int(event.keyCode)
-        // Une touche de fonction peut se passer de modificateur ; les autres non.
+        // A function key may have no modifier; other keys may not.
         if mods == 0 && !KeyNames.isFunctionKey(code) { return nil }
         return KeyCombo(keyCode: code, modifiers: mods)
     }
@@ -131,7 +131,7 @@ enum KeyNames {
     static func isFunctionKey(_ keyCode: Int) -> Bool { functionKeys.contains(keyCode) }
 }
 
-/// Stockage des raccourcis : absent = valeur par défaut, chaîne vide = aucun raccourci.
+/// Shortcut storage: missing = default value, empty string = no shortcut.
 @MainActor
 enum ShortcutStore {
     static let didChange = Notification.Name("DeclicShortcutsDidChange")
@@ -157,7 +157,7 @@ enum ShortcutStore {
     }
 }
 
-/// Champ d'enregistrement d'un raccourci (cliquer puis taper la combinaison).
+/// Shortcut recorder field (click, then type the combination).
 @MainActor
 struct ShortcutRecorder: View {
     let action: ShortcutAction

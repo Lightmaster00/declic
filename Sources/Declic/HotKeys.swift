@@ -1,7 +1,7 @@
 import AppKit
 import Carbon
 
-/// Raccourcis clavier globaux via l'API Carbon (fonctionne sans autorisation d'accessibilité).
+/// Global keyboard shortcuts through the Carbon API (no Accessibility permission needed).
 @MainActor
 final class HotKeyCenter {
     typealias Handler = @MainActor () -> Void
@@ -13,18 +13,18 @@ final class HotKeyCenter {
     private var installed = false
     private var nextID: UInt32 = 1
 
-    /// Enregistre un raccourci. Retourne un identifiant utilisable avec `unregister`.
+    /// Registers a shortcut. Returns an identifier to pass to `unregister`.
     @discardableResult
     func register(keyCode: Int, modifiers: Int, handler: @escaping Handler) -> UInt32? {
         installIfNeeded()
         let id = nextID
         nextID += 1
         var ref: EventHotKeyRef?
-        let hotKeyID = EventHotKeyID(signature: OSType(0x5348_4B54), id: id) // 'SHKT'
+        let hotKeyID = EventHotKeyID(signature: OSType(0x4443_4C43), id: id) // 'DCLC'
         let status = RegisterEventHotKey(UInt32(keyCode), UInt32(modifiers), hotKeyID,
                                          GetApplicationEventTarget(), 0, &ref)
         guard status == noErr, let ref else {
-            NSLog("Declic: impossible d'enregistrer le raccourci \(keyCode) (\(status))")
+            NSLog("Declic: could not register shortcut \(keyCode) (\(status))")
             return nil
         }
         handlers[id] = handler

@@ -5,13 +5,13 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 extension NSScreen {
-    /// L'écran sous le pointeur de la souris.
+    /// The display under the mouse pointer.
     static var underMouse: NSScreen {
         let p = NSEvent.mouseLocation
         return screens.first { NSMouseInRect(p, $0.frame, false) } ?? main ?? screens[0]
     }
 
-    /// L'écran qui contient la plus grande partie d'un rectangle (coordonnées Cocoa globales).
+    /// The display holding most of a rectangle (global Cocoa coordinates).
     static func best(for rect: CGRect) -> NSScreen {
         var best: NSScreen?
         var bestArea: CGFloat = 0
@@ -28,7 +28,7 @@ extension NSScreen {
 }
 
 extension NSWindow.Level {
-    /// Au-dessus des overlays de sélection (barre de contrôle d'enregistrement…).
+    /// Above the selection overlays (recording control bar…).
     static let aboveOverlay = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 1)
 }
 
@@ -47,7 +47,7 @@ enum ImageTools {
         return data as Data
     }
 
-    /// Ramène une capture Retina à 1x.
+    /// Scales a Retina capture down to 1x.
     static func downscale(_ image: CGImage, by scale: CGFloat) -> CGImage? {
         guard scale > 1 else { return image }
         let w = max(1, Int((CGFloat(image.width) / scale).rounded()))
@@ -59,7 +59,7 @@ enum ImageTools {
         return ctx.makeImage()
     }
 
-    /// Ajoute une marge colorée autour d'une capture de fenêtre.
+    /// Adds a colored margin around a window capture.
     @MainActor
     static func applyWindowBackground(_ image: CGImage, scale: CGFloat) -> CGImage {
         let prefs = Prefs.shared
@@ -81,7 +81,7 @@ enum ImageTools {
         return ctx.makeImage() ?? image
     }
 
-    /// Version réduite d'une image (pour l'affichage : macOS n'affiche pas les images de plus de 16 384 px).
+    /// Downscaled image for display (macOS can't display images taller than 16,384 px).
     static func downscaled(_ image: CGImage, maxPixel: Int) -> CGImage {
         let longest = max(image.width, image.height)
         guard longest > maxPixel else { return image }
@@ -94,7 +94,7 @@ enum ImageTools {
         return ctx.makeImage() ?? image
     }
 
-    /// Vignette légère d'un fichier image ou vidéo.
+    /// Lightweight thumbnail of an image or video file.
     static func thumbnail(of url: URL, maxPixel: Int) -> CGImage? {
         guard let src = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
         let opts: [CFString: Any] = [
@@ -112,7 +112,7 @@ enum FileUtil {
         return rep.representation(using: .png, properties: [:])
     }
 
-    /// « 2026-11-06 à 01.05.12 » selon la langue du système.
+    /// "2026-11-06 at 01.05.12" depending on the system language.
     static func timestamp() -> String {
         let now = Date()
         let day = DateFormatter()
@@ -127,7 +127,7 @@ enum FileUtil {
             : "\(day.string(from: now)) \(at) \(time.string(from: now))"
     }
 
-    /// Dossier temporaire unique (un par fichier, pour garder des noms propres au glisser-déposer).
+    /// Unique temporary folder (one per file, to keep clean names for drag and drop).
     static func newTempFolder() -> URL {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("Declic", isDirectory: true)
@@ -136,7 +136,7 @@ enum FileUtil {
         return url
     }
 
-    /// Fichier temporaire au format choisi (pour le glisser-déposer).
+    /// Temporary file in the chosen format (for drag and drop).
     @MainActor
     static func writeTempImage(_ image: CGImage) throws -> URL {
         let prefs = Prefs.shared
@@ -149,7 +149,7 @@ enum FileUtil {
         return url
     }
 
-    /// Nouvelle URL libre dans le dossier de sauvegarde (le Bureau par défaut).
+    /// New free URL in the save folder (the Desktop by default).
     @MainActor
     static func newSaveURL(prefix: String, ext: String) throws -> URL {
         let folder = Prefs.shared.saveFolder
@@ -164,7 +164,7 @@ enum FileUtil {
         return url
     }
 
-    /// Enregistre une image dans le dossier de sauvegarde, au format choisi dans les réglages.
+    /// Saves an image to the save folder, in the format chosen in settings.
     @MainActor
     @discardableResult
     static func savePNG(_ image: CGImage) throws -> URL {
@@ -178,7 +178,7 @@ enum FileUtil {
         return url
     }
 
-    /// Copie une vidéo / un GIF dans le dossier de sauvegarde.
+    /// Copies a video / GIF to the save folder.
     @MainActor
     @discardableResult
     static func saveVideo(_ url: URL, isGIF: Bool) throws -> URL {
@@ -234,7 +234,7 @@ enum Sound {
         sound?.play()
     }
 
-    /// Petit son de confirmation (copie, enregistrement).
+    /// Short confirmation sound (copy, save).
     static func success() {
         guard Prefs.shared.playSound else { return }
         let sound = NSSound(named: "Pop")
@@ -251,7 +251,7 @@ enum Sound {
     }
 }
 
-/// Panneau flottant sans activation de l'app (vignettes, HUD, contrôles).
+/// Floating panel that doesn't activate the app (thumbnails, HUDs, controls).
 final class FloatingPanel: NSPanel {
     init(size: CGSize) {
         super.init(contentRect: CGRect(origin: .zero, size: size),
@@ -270,11 +270,11 @@ final class FloatingPanel: NSPanel {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
-    // Jamais « clé » : cliquer sur une vignette ou une barre ne retire pas le focus à l'app en cours.
+    // Never key: clicking a thumbnail or a bar doesn't steal focus from the current app.
     override var canBecomeKey: Bool { false }
 }
 
-/// NSHostingView qui accepte le premier clic même si l'app n'est pas active.
+/// NSHostingView that accepts the first click even when the app isn't active.
 final class FirstMouseHostingView<Content: View>: NSHostingView<Content> {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 }

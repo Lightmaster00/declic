@@ -1,8 +1,8 @@
 import AppKit
 import ApplicationServices
 
-/// Choix d'une fenêtre avec le « Mission Control » de Déclic (voir WindowGallery).
-/// Rien ne change à l'écran une fois le choix fait : pas d'app activée, pas de bureau changé.
+/// Window picking with Déclic's own Mission Control-style gallery (see WindowGallery).
+/// Nothing changes on screen after picking: no app is activated and no Space switches.
 @MainActor
 final class MissionControlPicker {
     static let shared = MissionControlPicker()
@@ -36,15 +36,15 @@ final class MissionControlPicker {
         }
     }
 
-    /// Ferme la galerie en cours (le rappel reçoit nil).
+    /// Closes the current gallery (the callback receives nil).
     func cancel() {
         gallery?.cancel()
         gallery = nil
     }
 }
 
-/// Met une fenêtre précise au premier plan (utile pour la faire défiler), puis permet
-/// de revenir à l'app d'origine.
+/// Brings one specific window to the front (needed to scroll it), and lets us
+/// return to the original app afterwards.
 @MainActor
 enum WindowRaiser {
     static func raise(_ candidate: WindowCandidate) {
@@ -52,13 +52,13 @@ enum WindowRaiser {
               let app = NSRunningApplication(processIdentifier: pid) else { return }
         app.activate()
 
-        // Avec l'autorisation d'accessibilité, on remonte la fenêtre exacte (pas seulement l'app).
+        // With Accessibility permission, the exact window is raised (not just the app).
         guard AXIsProcessTrusted() else { return }
         let axApp = AXUIElementCreateApplication(pid)
         var value: CFTypeRef?
         guard AXUIElementCopyAttributeValue(axApp, kAXWindowsAttribute as CFString, &value) == .success,
               let windows = value as? [AXUIElement] else { return }
-        let target = candidate.window.frame // coordonnées CG (origine en haut à gauche)
+        let target = candidate.window.frame // CG coordinates (origin at top left)
         for window in windows {
             guard let frame = frame(of: window) else { continue }
             if abs(frame.minX - target.minX) < 4, abs(frame.minY - target.minY) < 4,

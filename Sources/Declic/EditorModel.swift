@@ -65,7 +65,7 @@ enum AnnotationKind: Equatable {
     case counter(Int)
 }
 
-/// Annotation, en pixels de l'image, origine en haut à gauche.
+/// Annotation, in image pixels, origin at top left.
 struct Annotation: Identifiable {
     let id = UUID()
     var kind: AnnotationKind
@@ -102,13 +102,13 @@ final class EditorState: ObservableObject {
     @Published var draft: Annotation?
     @Published var cropRect: CGRect?
     @Published var toast: String?
-    /// Zoom relatif à l'image « ajustée » à la fenêtre (1 = ajusté), et décalage de la vue en points.
+    /// Zoom relative to the fitted image (1 = fit), and view offset in points.
     @Published var zoom: CGFloat = 1
     @Published var pan: CGPoint = .zero
-    /// Zoom réel en % (100 % = taille réelle), mis à jour par le canevas.
+    /// Actual zoom in % (100% = actual size), updated by the canvas.
     @Published var zoomPercent: Int = 100
 
-    /// Pixels par point de la capture (2 sur un écran Retina).
+    /// Pixels per point of the capture (2 on a Retina display).
     let pixelScale: CGFloat
 
     private struct Snapshot {
@@ -137,7 +137,7 @@ final class EditorState: ObservableObject {
         return levels[min(max(widthLevel, 1), 4) - 1] * pixelScale
     }
 
-    // MARK: Historique
+    // MARK: History
 
     private var snapshot: Snapshot {
         Snapshot(image: image, annotations: annotations, nextCounter: nextCounter)
@@ -221,7 +221,7 @@ final class EditorState: ObservableObject {
         selectedID = nil
     }
 
-    /// Version pixelisée de l'image entière (on n'en montre que les zones floutées).
+    /// Pixelated version of the whole image (only the blurred areas show it).
     func pixelatedImage() -> CGImage? {
         if let pixelatedCache { return pixelatedCache }
         let input = CIImage(cgImage: image)
@@ -304,7 +304,7 @@ final class EditorState: ObservableObject {
     }
 }
 
-/// Dessin des annotations dans un contexte « y vers le bas », en pixels d'image.
+/// Draws annotations in a y-down context, in image pixels.
 @MainActor
 enum AnnotationRenderer {
     static func draw(state: EditorState, in ctx: CGContext, includeDraft: Bool, showSelection: Bool) {
@@ -335,7 +335,7 @@ enum AnnotationRenderer {
         }
     }
 
-    /// Dessine une CGImage à l'endroit dans un contexte retourné.
+    /// Draws a CGImage upright in a flipped context.
     static func drawImage(_ image: CGImage, in rect: CGRect, ctx: CGContext) {
         ctx.saveGState()
         ctx.translateBy(x: rect.minX, y: rect.maxY)

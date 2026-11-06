@@ -1,110 +1,107 @@
 # Déclic
 
-**Capture, annote, partage — en un déclic.**
-Captures d'écran, capture défilante, enregistrement vidéo et GIF pour macOS 14+.
-App native (Swift, ScreenCaptureKit), **gratuite et open source** (licence MIT) : tout reste sur ton Mac.
+**Capture, annotate, share — in one click.**
+Screenshots, scrolling capture, video and GIF recording for macOS 14+.
+A native app (Swift, ScreenCaptureKit), **free and open source** (MIT): everything stays on your Mac.
 
-**[Télécharger la dernière version](https://github.com/Lightmaster00/declic/releases/latest)** · [Site](https://lightmaster00.github.io/declic/)
+**[Download Déclic](https://github.com/Lightmaster00/declic/releases/latest/download/Declic.dmg)** · [Website](https://lightmaster00.github.io/declic/) · [All releases](https://github.com/Lightmaster00/declic/releases)
 
-### Installation
+![Icon](Branding/icon-256.png)
 
-1. Télécharge `Declic-x.y.z.zip`, ouvre-le et glisse **Déclic** dans *Applications*.
-2. Au premier lancement, macOS peut indiquer que l'app vient d'un développeur non identifié :
-   ouvre *Réglages Système › Confidentialité et sécurité* et clique **Ouvrir quand même**.
-3. Autorise *Enregistrement de l'écran* (et *Accessibilité* pour le défilement automatique).
+## Install
 
-Les mises à jour suivantes s'installent ensuite depuis l'app, en un clic.
+1. Download `Declic.dmg`, open it and drag **Déclic** into *Applications*.
+2. On first launch, macOS may say the app comes from an unidentified developer:
+   open *System Settings › Privacy & Security* and click **Open Anyway**.
+3. Allow *Screen Recording* (and *Accessibility* for auto-scroll).
 
-![Icône](Branding/icon-256.png)
+Later updates install from inside the app, in one click.
 
-## Fonctionnalités
+## Features
 
-L'interface suit la langue du système (français, anglais, espagnol, allemand, japonais ; anglais sinon).
-Tous les raccourcis se modifient dans **Réglages › Raccourcis**.
+The interface follows the system language (English, French, Spanish, German, Japanese; English otherwise).
+Every shortcut can be changed in **Settings › Shortcuts**.
 
-| Raccourci par défaut | Action |
+| Default shortcut | Action |
 |-----------|--------|
-| ⌥⇧3 | Capture plein écran |
-| ⌥⇧4 | Capture d'une zone — glisser = zone, Espace = choisir une fenêtre, Maj = carré, Entrée = plein écran, Échap = annuler |
-| ⌥⇧5 | Capture d'une fenêtre : toutes les fenêtres s'étalent, un clic capture, retour immédiat à l'écran d'origine |
-| ⌥⇧8 | Capture défilante : choisis la fenêtre, fais défiler (dans les deux sens) ou *Défilement automatique*, puis *Terminer* |
-| ⌥⇧6 | Enregistrement : **Zone**, **Plein écran** ou **Application**, en vidéo MP4 ou en GIF |
-| ⌥⇧H | Historique des captures |
+| ⌥⇧3 | Full-screen capture |
+| ⌥⇧4 | Area capture — drag = area, Space = pick a window, Shift = square, Return = full screen, Escape = cancel |
+| ⌥⇧5 | Window capture: every window spreads out, one click captures, you're back where you were instantly |
+| ⌥⇧8 | Scrolling capture: pick the window, scroll (both directions) or use *Auto-scroll*, then *Done* |
+| ⌥⇧6 | Recording: **Area**, **Full Screen** or **App**, as MP4 video or GIF |
+| ⌥⇧H | Capture history |
 
-- **Vignette d'accès rapide** (en bas à gauche) : clic = éditeur ; au survol *Copier*, *Enregistrer*
-  (avec confirmation animée), *Garder* (la vignette reste affichée) et *Fermer* ; glisser-déposer
-  vers n'importe quelle app ; la pile défile quand elle dépasse la hauteur de l'écran.
-- **Éditeur d'annotations** : flèches, formes, texte, surligneur, pixellisation, numéros, recadrage,
-  annuler / rétablir, zoom (pincement, ⌘+ / ⌘− / ⌘0 / ⌘1, Espace + glisser).
-- **Capture défilante** : Déclic repère la partie qui défile sous ton pointeur (sans la barre
-  d'outils ni les autres panneaux) et assemble le contenu. Le défilement automatique demande
-  l'autorisation *Accessibilité*.
-- **Enregistrement** : zone redimensionnable, compte à rebours, pointeur et clics, export GIF.
-- **Historique** : toutes les captures et vidéos, avec copie, enregistrement, annotation, suppression.
-- **Mises à jour** : proposées automatiquement dès qu'une nouvelle version est publiée.
+- **Quick Access thumbnail** (bottom left): click = editor; on hover *Copy*, *Save* (with an animated
+  confirmation), *Keep* (the thumbnail stays) and *Close*; drag and drop into any app; the stack
+  scrolls when it's taller than the screen.
+- **Annotation editor**: arrows, shapes, text, highlighter, pixelate, numbered steps, crop,
+  undo / redo, zoom (pinch, ⌘+ / ⌘− / ⌘0 / ⌘1, Space + drag).
+- **Scrolling capture**: Déclic finds the area that scrolls under your pointer (ignoring toolbars and
+  other panes) and stitches the content. Auto-scroll requires the *Accessibility* permission.
+- **Recording**: resizable area, countdown, cursor and clicks, GIF export.
+- **History**: every capture and video, with copy, save, annotate and delete.
+- **Updates**: offered automatically as soon as a new version is published.
 
-## Développement
+## Development
 
 ```bash
-./build.sh install   # compile, installe /Applications/Déclic.app et relance
-./build.sh test      # tests automatiques
-./build.sh run       # lance la version de build/ sans l'installer
+./build.sh install   # build, install /Applications/Déclic.app and relaunch
+./build.sh test      # automated tests
+./build.sh run       # launch the build/ copy without installing it
+./build.sh dmg       # build/Declic.dmg
 ```
 
-- **Autorisations conservées** : au premier build, un certificat local (« Declic Local Signing »)
-  est créé dans le trousseau ; toutes les versions suivantes sont signées avec lui, donc
-  *Enregistrement de l'écran* et *Accessibilité* ne sont pas redemandés.
-- **Intégration continue** : chaque envoi sur GitHub compile l'app et lance les tests sur un Mac
-  (onglet *Actions* du dépôt).
-- **Journal de la capture défilante** : `build/debug/scroll.log` (build de développement) ou
+- **Permissions are kept**: the first build creates a local certificate ("Declic Local Signing") in
+  your keychain; every later build is signed with it, so *Screen Recording* and *Accessibility*
+  aren't asked again.
+- **Continuous integration**: every push builds the app, runs the tests and produces a DMG on a Mac
+  (repository *Actions* tab).
+- **Scrolling capture log**: `build/debug/scroll.log` (development build) or
   `~/Library/Logs/Declic/scroll.log`.
 
-## Publier une version
-
-Le code, les versions téléchargeables et le site sont dans le dépôt public indiqué par
-`.github-repo` (`Lightmaster00/declic`).
+## Publishing a release
 
 ```bash
-brew install gh && gh auth login     # une seule fois
-./release.sh 1.0.1 "Ce qui change"
+brew install gh && gh auth login     # once
+./release.sh 1.0.1 "What's new"
 ```
 
-Chaque app installée vérifie les mises à jour au lancement puis toutes les 24 h (désactivable dans
-Réglages › Général) et propose *Installer et redémarrer*. Une version signée avec un autre
-certificat que l'app installée est refusée.
+This builds and signs the app, then publishes `Declic.dmg` (for downloads) and `Declic.zip`
+(for in-app updates) as a GitHub release. Installed copies check for updates at launch and every
+24 hours (can be turned off in Settings › General) and offer *Install and Restart*. A version signed
+with a different certificate than the installed app is rejected, so always publish from the same Mac.
 
-Les versions sont signées avec le certificat local de la machine qui publie : publie-les toujours
-depuis le même Mac. Avec un certificat Apple *Developer ID* et la notarisation (voir `release.sh`),
-l'avertissement « développeur non identifié » disparaît.
+With an Apple *Developer ID* certificate and notarization (see the header of `release.sh`), the
+"unidentified developer" warning goes away.
 
-## Contribuer
+## Contributing
 
-Les contributions sont bienvenues : ouvre une *issue* pour signaler un bug ou proposer une idée,
-ou une *pull request* (les tests doivent passer : `./build.sh test`).
+Contributions are welcome: open an *issue* to report a bug or suggest an idea, or a *pull request*
+(the tests must pass: `./build.sh test`).
 
-## Licence
-
-MIT — voir [LICENSE](LICENSE). Le nom et l'icône « Déclic » identifient ce projet.
-
-## Structure
+## Project layout
 
 ```
 Sources/Declic/
-  App.swift / AppDelegate.swift   point d'entrée, menu de la barre des menus, raccourcis
-  Brand.swift                     couleurs et icône de la barre des menus
-  Capturer.swift                  ScreenCaptureKit + orchestration des captures
-  Overlay.swift                   sélection de zone (curseurs, poignées)
-  MissionControl.swift / WindowGallery.swift   choix d'une fenêtre
-  ScrollCapture.swift             capture défilante (détection de la zone, assemblage)
-  QuickAccess.swift               vignettes d'accès rapide
-  Editor.swift / EditorModel.swift   éditeur d'annotations
-  Recording.swift                 enregistrement vidéo / GIF
-  History.swift / Preview.swift   historique, aperçu des vidéos
+  App.swift / AppDelegate.swift   entry point, menu bar menu, shortcuts
+  Brand.swift                     colors and menu bar icon
+  Capturer.swift                  ScreenCaptureKit + capture orchestration
+  Overlay.swift                   area selection (cursors, handles)
+  MissionControl.swift / WindowGallery.swift   window picker
+  ScrollCapture.swift             scrolling capture (area detection, stitching)
+  QuickAccess.swift               Quick Access thumbnails
+  Editor.swift / EditorModel.swift   annotation editor
+  Recording.swift                 video / GIF recording
+  History.swift / Preview.swift   history, video preview
   Settings.swift / Prefs.swift / Shortcuts.swift / HotKeys.swift
-  Updater.swift                   mises à jour depuis GitHub
-  Localization*.swift             textes (5 langues)
+  Updater.swift                   updates from GitHub releases
+  Localization*.swift             interface strings (5 languages)
   UIComponents.swift / Util.swift
-Tests/DeclicTests/                tests (assemblage, détection des panneaux, versions, galerie)
-Branding/                         icône, charte (BRAND.md)
-site/                             page de présentation (publiée sur GitHub Pages)
+Tests/DeclicTests/                tests (stitching, pane detection, versions, gallery layout)
+Branding/                         icon and brand guide (BRAND.md)
+site/                             website (published with GitHub Pages)
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE). The "Déclic" name and icon identify this project.

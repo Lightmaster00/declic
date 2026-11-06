@@ -17,12 +17,12 @@ final class StitcherTests: XCTestCase {
         footer = gen.band(width: width, height: footerHeight, base: 60, stripe: 5)
     }
 
-    /// Ce qu'affiche la vue quand le document est défilé à la ligne `pos`.
+    /// What the view shows when the document is scrolled to row `pos`.
     func view(_ pos: Int) -> [[UInt8]] {
         header + Array(doc[pos..<(pos + height - headerHeight - footerHeight)]) + footer
     }
 
-    /// Résultat attendu : en-tête + tout le contenu parcouru + pied de page.
+    /// Expected result: header + all content scrolled through + footer.
     func expected(_ positions: [Int]) -> [[UInt8]] {
         let lo = positions.min()!, hi = positions.max()!
         return header + Array(doc[lo..<(hi + height - headerHeight - footerHeight)]) + footer
@@ -40,10 +40,10 @@ final class StitcherTests: XCTestCase {
     func assertStitched(_ positions: [Int], file: StaticString = #filePath, line: UInt = #line) {
         let result = stitch(positions)
         let truth = expected(positions)
-        XCTAssertEqual(result.count, truth.count, "hauteur", file: file, line: line)
+        XCTAssertEqual(result.count, truth.count, "height", file: file, line: line)
         if result.count == truth.count {
             let wrong = zip(result, truth).enumerated().filter { $0.element.0 != $0.element.1 }.map(\.offset)
-            XCTAssertTrue(wrong.isEmpty, "lignes différentes : \(wrong.prefix(10))", file: file, line: line)
+            XCTAssertTrue(wrong.isEmpty, "rows differ: \(wrong.prefix(10))", file: file, line: line)
         }
     }
 
@@ -74,8 +74,8 @@ final class StitcherTests: XCTestCase {
         XCTAssertEqual(result, .lost)
     }
 
-    /// Fenêtre avec une barre d'outils fixe et deux panneaux : la liste à gauche change aussi
-    /// (sélection), mais le pointeur est sur le contenu à droite → c'est lui qui est capturé.
+    /// Window with a fixed toolbar and two panes: the list on the left also changes
+    /// (selection), but the pointer is over the content on the right → that's what gets captured.
     func testWindowPicksPaneUnderPointer() {
         var gen = Synthetic(rng: SplitMix(seed: 7))
         let toolbar = gen.band(width: 400, height: 50, base: 200, stripe: 9)
@@ -94,11 +94,11 @@ final class StitcherTests: XCTestCase {
         let result = stitcher.process(Synthetic.frame(window(1080, list: list2)))
         XCTAssertEqual(result, .added)
         let crop = try? XCTUnwrap(stitcher.crop)
-        XCTAssertGreaterThanOrEqual(crop?.x ?? 0, 155, "la zone doit être le panneau de droite")
-        XCTAssertGreaterThanOrEqual(crop?.y ?? 0, 45, "la barre d'outils est exclue")
+        XCTAssertGreaterThanOrEqual(crop?.x ?? 0, 155, "the area must be the right-hand pane")
+        XCTAssertGreaterThanOrEqual(crop?.y ?? 0, 45, "the toolbar is excluded")
     }
 
-    /// Un changement qui n'est pas un défilement (image qui se charge) ne fige pas la zone.
+    /// A change that isn't a scroll (an image loading) doesn't lock the area.
     func testNonScrollChangeDoesNotLockCrop() {
         var gen = Synthetic(rng: SplitMix(seed: 9))
         let a = gen.document(width: 300, height: 300)

@@ -6,9 +6,9 @@ import ScreenCaptureKit
 import SwiftUI
 import UniformTypeIdentifiers
 
-// MARK: - Écriture du flux vidéo
+// MARK: - Video stream writer
 
-/// Reçoit les images de SCStream et les écrit en MP4 (H.264) avec AVAssetWriter.
+/// Receives SCStream frames and writes them as MP4 (H.264) with AVAssetWriter.
 final class StreamWriter: NSObject, SCStreamOutput, SCStreamDelegate, @unchecked Sendable {
     let url: URL
     var onUnexpectedStop: (@Sendable () -> Void)?
@@ -72,7 +72,7 @@ final class StreamWriter: NSObject, SCStreamOutput, SCStreamDelegate, @unchecked
     }
 
     func stream(_ stream: SCStream, didStopWithError error: Error) {
-        NSLog("Declic: flux arrêté : \(error)")
+        NSLog("Declic: stream stopped: \(error)")
         onUnexpectedStop?()
     }
 
@@ -88,7 +88,7 @@ final class StreamWriter: NSObject, SCStreamOutput, SCStreamDelegate, @unchecked
                     cont.resume(returning: false)
                     return
                 }
-                // Prolonge la dernière image jusqu'à l'arrêt (écran immobile = pas de nouvelles images).
+                // Extends the last frame until stop (a still screen produces no new frames).
                 let tail = max(0, ProcessInfo.processInfo.systemUptime - self.lastArrival)
                 let end = CMTimeAdd(self.lastPTS, CMTime(seconds: tail, preferredTimescale: 600))
                 self.input.markAsFinished()
@@ -133,7 +133,7 @@ enum GIFExporter {
     }
 }
 
-// MARK: - Barre de choix (zone / plein écran / application)
+// MARK: - Mode bar (area / full screen / app)
 
 final class RecordingHUDModel: ObservableObject {
     @Published var format: RecordingFormat = .mp4
@@ -204,7 +204,7 @@ struct RecordingHUDView: View {
     }
 }
 
-// MARK: - Compte à rebours
+// MARK: - Countdown
 
 final class CountdownModel: ObservableObject {
     @Published var value = 3
@@ -226,7 +226,7 @@ struct CountdownView: View {
     }
 }
 
-// MARK: - Pastille pendant l'enregistrement
+// MARK: - Badge while recording
 
 final class RecordingTimerModel: ObservableObject {
     @Published var elapsed: TimeInterval = 0
@@ -297,7 +297,7 @@ final class RecordingBorderView: NSView {
     }
 }
 
-/// Fenêtre transparente qui dessine un cadre pointillé autour d'une zone.
+/// Transparent window drawing a dashed frame around an area.
 @MainActor
 func makeBorderWindow(around rect: CGRect, color: NSColor) -> NSWindow {
     let frame = rect.insetBy(dx: -3, dy: -3)
@@ -316,7 +316,7 @@ func makeBorderWindow(around rect: CGRect, color: NSColor) -> NSWindow {
     return border
 }
 
-// MARK: - Contrôleur
+// MARK: - Controller
 
 @MainActor
 final class RecordingController {
@@ -340,7 +340,7 @@ final class RecordingController {
     private(set) var isRecording = false
     private var starting = false
 
-    // Choix de la cible
+    // Target selection
     private let hudModel = RecordingHUDModel()
     private var hudPanel: FloatingPanel?
     private var hudScreen: NSScreen?
@@ -351,7 +351,7 @@ final class RecordingController {
     private var lastArea: AreaResult?
     private var target: Target?
 
-    // Enregistrement
+    // Recording
     private var writer: StreamWriter?
     private var format: RecordingFormat = .mp4
     private var controlPanel: FloatingPanel?
@@ -362,12 +362,12 @@ final class RecordingController {
 
     var isChoosing: Bool { hudPanel != nil }
 
-    /// Raccourci d'enregistrement : ouvre la barre de choix, la ferme, ou arrête l'enregistrement.
+    /// Recording shortcut: opens the mode bar, closes it, or stops the recording.
     func toggle() {
         if isRecording {
             stop(cancel: false)
         } else if pickingWindow {
-            // Le raccourci referme tout, même pendant le choix d'une fenêtre.
+            // The shortcut closes everything, even while a window is being picked.
             pickingWindow = false
             MissionControlPicker.shared.cancel()
             closeChooser()
@@ -378,7 +378,7 @@ final class RecordingController {
         }
     }
 
-    // MARK: Barre de choix
+    // MARK: Mode bar
 
     private func openChooser() {
         hudModel.format = Prefs.shared.recLastFormat
@@ -411,7 +411,7 @@ final class RecordingController {
         hudPanel = panel
 
         registerHUDKeys()
-        // Le mode Application n'est jamais rouvert automatiquement (on choisit la fenêtre à chaque fois).
+        // App mode is never reopened automatically (the window is picked every time).
         let last = Prefs.shared.recLastMode
         activate(last == .window ? .area : last)
     }
@@ -429,14 +429,14 @@ final class RecordingController {
         hudKeys = []
     }
 
-    /// Change de mode à tout moment (on peut revenir en arrière librement).
+    /// Switches mode at any time (going back is always possible).
     private func activate(_ mode: RecordModeChoice) {
         closePickers()
         target = nil
         hudModel.mode = mode
         hudModel.ready = false
         Prefs.shared.recLastMode = mode
-        // La barre reste au-dessus des overlays.
+        // The bar stays above the overlays.
         defer { if !pickingWindow { hudPanel?.orderFrontRegardless() } }
 
         switch mode {
@@ -464,7 +464,7 @@ final class RecordingController {
         }
     }
 
-    /// Mode Application : la fenêtre se choisit dans Mission Control.
+    /// App mode: the window is picked in the window gallery.
     private func chooseWindowInMissionControl() {
         windowHighlight?.orderOut(nil)
         windowHighlight = nil
@@ -476,8 +476,8 @@ final class RecordingController {
             self.pickingWindow = false
             guard let panel = self.hudPanel, self.hudModel.mode == .window else { return }
             if let candidate {
-                // Fenêtre choisie : elle passe au premier plan, puis l'enregistrement démarre
-                // directement (après le compte à rebours).
+                // Window picked: it comes to the front, then recording starts
+                // right away (after the countdown).
                 self.target = .window(candidate)
                 self.hudModel.ready = true
                 WindowRaiser.raise(candidate)
@@ -486,7 +486,7 @@ final class RecordingController {
                     self.startRecording()
                 }
             } else {
-                // Choix annulé : retour à la barre, en mode Zone.
+                // Picking cancelled: back to the bar, in Area mode.
                 panel.orderFrontRegardless()
                 self.registerHUDKeys()
                 self.activate(.area)
@@ -494,7 +494,7 @@ final class RecordingController {
         }
     }
 
-    /// Échap : annule la sélection en cours, sinon ferme la barre.
+    /// Escape: cancels the current selection, otherwise closes the bar.
     private func back() {
         if let picker = areaPicker, picker.clearSelection() {
             target = nil
@@ -560,7 +560,7 @@ final class RecordingController {
         panel.orderOut(nil)
     }
 
-    // MARK: Démarrage / arrêt
+    // MARK: Start / stop
 
     private func begin(_ target: Target) async {
         do {
@@ -585,7 +585,7 @@ final class RecordingController {
                 filter = Capturer.displayFilter(display, content: content)
                 screen = s
             case .window(let candidate):
-                // La fenêtre est suivie même si on la déplace ou qu'elle passe derrière une autre.
+                // The window is followed even when moved or covered by another one.
                 filter = SCContentFilter(desktopIndependentWindow: candidate.window)
                 screen = NSScreen.best(for: candidate.frame)
             }
@@ -594,7 +594,7 @@ final class RecordingController {
             let pointSize = source?.size ?? filter.contentRect.size
             var pixelWidth = pointSize.width * scale
             var pixelHeight = pointSize.height * scale
-            let maxDimension: CGFloat = 3840 // limite confortable pour H.264
+            let maxDimension: CGFloat = 3840 // comfortable limit for H.264
             if max(pixelWidth, pixelHeight) > maxDimension {
                 let f = maxDimension / max(pixelWidth, pixelHeight)
                 pixelWidth *= f

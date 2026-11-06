@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         center.addObserver(forName: ShortcutStore.didChange, object: nil, queue: .main) { _ in
             MainActor.assumeIsolated { (NSApp.delegate as? AppDelegate)?.registerHotKeys() }
         }
-        // Pendant la saisie d'un raccourci, on coupe les raccourcis globaux.
+        // While a shortcut is being recorded, global shortcuts are suspended.
         center.addObserver(forName: ShortcutStore.recordingDidChange, object: nil, queue: .main) { note in
             let recording = note.object as? Bool ?? false
             MainActor.assumeIsolated {
@@ -42,7 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         Updater.startAutomaticChecks()
     }
 
-    // MARK: Raccourcis globaux
+    // MARK: Global shortcuts
 
     private func unregisterHotKeys() {
         for id in hotKeyIDs { HotKeyCenter.shared.unregister(id) }
@@ -72,7 +72,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
-    // MARK: Icône de la barre des menus
+    // MARK: Menu bar icon
 
     private func updateStatusButton() {
         guard let button = statusItem?.button else { return }
@@ -156,7 +156,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             perform(action)
             return
         }
-        // Laisse le menu se refermer avant de figer l'écran.
+        // Let the menu close before freezing the screen.
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 250_000_000)
             self.perform(action)
@@ -189,7 +189,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func quit() { NSApp.terminate(nil) }
 
-    // MARK: Menu principal (⌘Z, ⌘C, ⌘S… dans l'éditeur, ⌘, pour les réglages)
+    // MARK: Main menu (⌘Z, ⌘C, ⌘S… in the editor, ⌘, for settings)
 
     private func buildMainMenu() {
         let main = NSMenu()
