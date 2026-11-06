@@ -351,17 +351,18 @@ final class QuickAccessManager {
             let folder = FileUtil.newTempFolder()
             let dragURL = folder.appendingPathComponent("\(prefs.screenshotPrefix) \(FileUtil.timestamp()).\(format.ext)")
             let backingURL = format == .png ? dragURL : folder.appendingPathComponent(".original.png")
-            Task.detached(priority: .userInitiated) { [weak entry] in
-                let dragData = ImageTools.encode(image, format: format, quality: quality)
-                let backingData = format == .png ? dragData : FileUtil.pngData(image)
-                let wroteDrag = (try? dragData?.write(to: dragURL)) != nil
-                let wroteBacking = format == .png ? wroteDrag : (try? backingData?.write(to: backingURL)) != nil
-                await MainActor.run {
-                    guard let entry else { return }
-                    if wroteDrag { entry.model.dragURL = dragURL }
-                    if wroteBacking, case .image = entry.kind {
-                        entry.kind = .storedImage(backingURL, scale: scale)
-                    }
+            Task { @MainActor [weak entry] in
+                let (wroteDrag, wroteBacking) = await Task.detached(priority: .userInitiated) { () -> (Bool, Bool) in
+                    let dragData = ImageTools.encode(image, format: format, quality: quality)
+                    let wroteDrag = (try? dragData?.write(to: dragURL)) != nil
+                    if format == .png { return (wroteDrag, wroteDrag) }
+                    let wroteBacking = (try? FileUtil.pngData(image)?.write(to: backingURL)) != nil
+                    return (wroteDrag, wroteBacking)
+                }.value
+                guard let entry else { return }
+                if wroteDrag { entry.model.dragURL = dragURL }
+                if wroteBacking, case .image = entry.kind {
+                    entry.kind = .storedImage(backingURL, scale: scale)
                 }
             }
         }

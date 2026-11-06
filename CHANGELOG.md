@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.2
+
+- Much lower memory use with many Quick Access thumbnails, and no pause right after a capture.
+- Pressing a capture shortcut again cancels the current selection, so a capture can't get stuck.
+- History files can only be read and deleted inside the history folder.
+- The scrolling capture log no longer stores screenshots in release builds.
+- Cleaner installer window, with a centred arrow.
+
 ## 1.0.1
 
 - Cleaner installer: the Declic icon, large, on the left and the Applications folder on the right.
