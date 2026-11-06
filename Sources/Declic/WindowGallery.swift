@@ -1,7 +1,7 @@
 import AppKit
 import Carbon
 import CoreImage
-import ScreenCaptureKit
+@preconcurrency import ScreenCaptureKit
 
 /// Window thumbnails, captured in parallel.
 enum WindowThumbnails {

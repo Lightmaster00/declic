@@ -40,7 +40,16 @@ final class HistoryStore: ObservableObject {
         prune()
     }
 
-    func url(for item: HistoryItem) -> URL { folder.appendingPathComponent(item.fileName) }
+    /// File of an item. Only the last path component of the stored name is used, so an edited
+    /// index can never point outside the history folder.
+    func url(for item: HistoryItem) -> URL {
+        folder.appendingPathComponent(Self.safeFileName(item.fileName))
+    }
+
+    nonisolated static func safeFileName(_ stored: String) -> String {
+        let name = (stored as NSString).lastPathComponent
+        return name.isEmpty || name.hasPrefix(".") ? "invalid" : name
+    }
 
     func addImage(_ image: CGImage, scale: CGFloat) {
         guard Prefs.shared.historyEnabled else { return }

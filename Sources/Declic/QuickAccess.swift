@@ -6,6 +6,8 @@ enum QuickItemKind {
     /// `origin`: original on-screen position (Cocoa coordinates), to pin in the same place.
     case image(CGImage, scale: CGFloat, origin: CGRect?)
     case video(URL, isGIF: Bool, thumbnail: NSImage?)
+    /// An image whose lossless copy is on disk (used internally to free memory).
+    case storedImage(URL, scale: CGFloat)
 }
 
 enum QuickLayout {
@@ -25,6 +27,8 @@ final class QuickCardModel: ObservableObject {
     /// Kept: the thumbnail stays after Copy / Save.
     @Published var pinned = false
     @Published var feedback: QuickFeedback?
+    /// File dragged out of the thumbnail (written in the background).
+    @Published var dragURL: URL?
 }
 
 struct QuickCardActions {
@@ -43,7 +47,6 @@ struct QuickCardView: View {
     let thumbnail: NSImage
     let badge: String
     let isVideo: Bool
-    let dragURL: URL?
     let actions: QuickCardActions
 
     var body: some View {
@@ -138,7 +141,7 @@ struct QuickCardView: View {
         )
         .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 3)
         .onDrag {
-            if let dragURL, let provider = NSItemProvider(contentsOf: dragURL) { return provider }
+            if let dragURL = model.dragURL, let provider = NSItemProvider(contentsOf: dragURL) { return provider }
             return NSItemProvider()
         }
         .padding(QuickLayout.pad)
@@ -223,13 +226,29 @@ final class QuickAccessManager {
 
     private final class Entry {
         let panel: FloatingPanel
-        let kind: QuickItemKind
+        /// Full-size image, kept in memory only until its lossless copy is on disk
+        /// (a stack of large Retina captures would otherwise use gigabytes).
+        var kind: QuickItemKind
         let model: QuickCardModel
         var timer: Timer?
         init(panel: FloatingPanel, kind: QuickItemKind, model: QuickCardModel) {
             self.panel = panel
             self.kind = kind
             self.model = model
+        }
+
+        /// The full-size image, from memory or from its lossless copy on disk.
+        var image: (CGImage, CGFloat)? {
+            switch kind {
+            case .image(let image, let scale, _):
+                return (image, scale)
+            case .storedImage(let url, let scale):
+                guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+                      let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return nil }
+                return (image, scale)
+            case .video:
+                return nil
+            }
         }
     }
 
@@ -242,18 +261,17 @@ final class QuickAccessManager {
         let prefs = Prefs.shared
         let box = prefs.qaSize.card
         let thumbnail: NSImage
-        let dragURL: URL?
         let isImage: Bool
         let badge: String
         switch kind {
         case .image(let image, _, _):
             thumbnail = NSImage(cgImage: ImageTools.downscaled(image, maxPixel: 900), size: .zero)
-            dragURL = try? FileUtil.writeTempImage(image)
             isImage = true
             badge = "\(image.width) × \(image.height)"
-        case .video(let url, let isGIF, let thumb):
+        case .storedImage:
+            return
+        case .video(_, let isGIF, let thumb):
             thumbnail = thumb ?? NSImage(systemSymbolName: "film", accessibilityDescription: nil) ?? NSImage()
-            dragURL = url
             isImage = false
             badge = isGIF ? "GIF" : "MP4"
         }
@@ -296,7 +314,7 @@ final class QuickAccessManager {
         }
 
         let view = QuickCardView(model: model, size: card, thumbnail: thumbnail, badge: badge,
-                                 isVideo: !isImage, dragURL: dragURL, actions: actions)
+                                 isVideo: !isImage, actions: actions)
         let host = QuickHostingView(rootView: view)
         host.frame = CGRect(origin: .zero, size: size)
         host.onHover = { [weak self, weak entry] hovering in
@@ -315,6 +333,38 @@ final class QuickAccessManager {
         }
         layout(newEntry: entry)
         scheduleAutoClose(entry)
+        prepareFiles(for: entry)
+    }
+
+    /// Writes, off the main thread, the file used for drag and drop and a lossless copy of the
+    /// image, then releases the full-size image from memory.
+    private func prepareFiles(for entry: Entry) {
+        switch entry.kind {
+        case .video(let url, _, _):
+            entry.model.dragURL = url
+        case .storedImage:
+            break
+        case .image(let image, let scale, _):
+            let prefs = Prefs.shared
+            let format = prefs.imageFormat
+            let quality = prefs.jpegQuality
+            let folder = FileUtil.newTempFolder()
+            let dragURL = folder.appendingPathComponent("\(prefs.screenshotPrefix) \(FileUtil.timestamp()).\(format.ext)")
+            let backingURL = format == .png ? dragURL : folder.appendingPathComponent(".original.png")
+            Task.detached(priority: .userInitiated) { [weak entry] in
+                let dragData = ImageTools.encode(image, format: format, quality: quality)
+                let backingData = format == .png ? dragData : FileUtil.pngData(image)
+                let wroteDrag = (try? dragData?.write(to: dragURL)) != nil
+                let wroteBacking = format == .png ? wroteDrag : (try? backingData?.write(to: backingURL)) != nil
+                await MainActor.run {
+                    guard let entry else { return }
+                    if wroteDrag { entry.model.dragURL = dragURL }
+                    if wroteBacking, case .image = entry.kind {
+                        entry.kind = .storedImage(backingURL, scale: scale)
+                    }
+                }
+            }
+        }
     }
 
     static func cardSize(for imageSize: CGSize, in box: CGSize) -> CGSize {
@@ -431,7 +481,9 @@ final class QuickAccessManager {
 
     private func copy(_ entry: Entry) {
         switch entry.kind {
-        case .image(let image, let scale, _):
+        case .image, .storedImage:
+            guard let loaded = entry.image else { return }
+            let (image, scale) = loaded
             Clipboard.copy(image: image, scale: scale)
         case .video(let url, _, _):
             Clipboard.copy(fileURL: url)
@@ -458,7 +510,9 @@ final class QuickAccessManager {
     private func save(_ entry: Entry) {
         do {
             switch entry.kind {
-            case .image(let image, _, _):
+            case .image, .storedImage:
+                guard let loaded = entry.image else { throw CocoaError(.fileReadCorruptFile) }
+                let image = loaded.0
                 try FileUtil.savePNG(image)
             case .video(let url, let isGIF, _):
                 try FileUtil.saveVideo(url, isGIF: isGIF)
@@ -470,7 +524,8 @@ final class QuickAccessManager {
     }
 
     private func edit(_ entry: Entry) {
-        guard case .image(let image, let scale, _) = entry.kind else { return }
+        guard let loaded = entry.image else { return }
+        let (image, scale) = loaded
         EditorWindowController.open(image: image, scale: scale)
         dismiss(entry)
     }
@@ -479,8 +534,10 @@ final class QuickAccessManager {
     /// Clicking the thumbnail opens the annotation editor (preview for videos).
     private func preview(_ entry: Entry) {
         switch entry.kind {
-        case .image(let image, let scale, _):
+        case .image, .storedImage:
             // The thumbnail stays on screen.
+            guard let loaded = entry.image else { return }
+            let (image, scale) = loaded
             EditorWindowController.open(image: image, scale: scale)
         case .video(let url, let isGIF, _):
             PreviewWindowController.show(.video(url, isGIF: isGIF))

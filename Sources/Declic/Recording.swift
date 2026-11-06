@@ -2,7 +2,7 @@ import AppKit
 import AVFoundation
 import Carbon
 import ImageIO
-import ScreenCaptureKit
+@preconcurrency import ScreenCaptureKit
 import SwiftUI
 import UniformTypeIdentifiers
 

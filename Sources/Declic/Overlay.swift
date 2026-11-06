@@ -726,6 +726,9 @@ final class AreaSelector {
         finish(shot: shot, rect: nil)
     }
 
+    /// Cancels from outside (the capture shortcut pressed again).
+    func cancelSelection() { cancel() }
+
     private func selectWholeScreenUnderMouse() {
         let screen = NSScreen.underMouse
         guard let shot = shots.first(where: { $0.screen == screen }) ?? shots.first else { return }

@@ -32,3 +32,13 @@ final class GalleryLayoutTests: XCTestCase {
         XCTAssertTrue(WindowGallery.layout([], in: CGRect(x: 0, y: 0, width: 100, height: 100)).isEmpty)
     }
 }
+
+final class HistoryTests: XCTestCase {
+    func testStoredFileNamesStayInsideTheHistoryFolder() {
+        XCTAssertEqual(HistoryStore.safeFileName("A1B2.png"), "A1B2.png")
+        XCTAssertEqual(HistoryStore.safeFileName("../../.ssh/id_rsa"), "id_rsa")
+        XCTAssertEqual(HistoryStore.safeFileName("/etc/passwd"), "passwd")
+        XCTAssertEqual(HistoryStore.safeFileName(".."), "invalid")
+        XCTAssertEqual(HistoryStore.safeFileName(""), "invalid")
+    }
+}

@@ -5,6 +5,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     name: Build and test (macOS)
@@ -43,3 +46,14 @@ jobs:
             test.log
             build/Declic.dmg
           if-no-files-found: ignore
+
+  sanitizers:
+    name: Memory and thread checks (macOS)
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tests with Address Sanitizer
+        run: swift test --sanitize=address
+      - name: Tests with Thread Sanitizer
+        run: swift test --sanitize=thread

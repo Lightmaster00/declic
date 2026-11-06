@@ -2,7 +2,7 @@ import AppKit
 import ApplicationServices
 import Carbon
 import CoreMedia
-import ScreenCaptureKit
+@preconcurrency import ScreenCaptureKit
 import SwiftUI
 
 // MARK: - Raw frames
@@ -752,10 +752,14 @@ final class ScrollDebugLog {
     private let folder: URL
     private let handle: FileHandle?
     private let start = Date()
+    /// Frames are only written in development builds: they may show private content.
+    private let savesImages: Bool
 
     init() {
         let base: URL
-        if let dir = Bundle.main.object(forInfoDictionaryKey: "DeclicSourceDir") as? String {
+        let sourceDir = Bundle.main.object(forInfoDictionaryKey: "DeclicSourceDir") as? String
+        savesImages = sourceDir != nil
+        if let dir = sourceDir {
             base = URL(fileURLWithPath: dir).appendingPathComponent("build/debug", isDirectory: true)
         } else {
             base = FileManager.default.homeDirectoryForCurrentUser
@@ -776,7 +780,7 @@ final class ScrollDebugLog {
     }
 
     func saveImage(_ frame: RawFrame, name: String) {
-        guard let image = CoreStitcher.image(from: frame, rows: 0..<frame.height),
+        guard savesImages, let image = CoreStitcher.image(from: frame, rows: 0..<frame.height),
               let data = FileUtil.pngData(image) else { return }
         try? data.write(to: folder.appendingPathComponent("\(name).png"))
     }

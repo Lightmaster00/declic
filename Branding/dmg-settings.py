@@ -27,7 +27,7 @@ text_size = 14
 label_pos = "bottom"
 arrange_by = None
 icon_locations = {
-    appname: (190, 190),
-    "Applications": (490, 190),
+    appname: (190, 172),
+    "Applications": (490, 172),
 }
 hide_extensions = [appname]

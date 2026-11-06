@@ -1,5 +1,5 @@
 import AppKit
-import ScreenCaptureKit
+@preconcurrency import ScreenCaptureKit
 
 struct WindowCandidate {
     let window: SCWindow
@@ -200,7 +200,11 @@ final class CaptureCoordinator {
     /// Area capture: hover = highlighted window (click to capture it),
     /// drag = area. The screen is only frozen when the option is on.
     func captureArea() {
-        guard !busy else { return }
+        // Pressing the shortcut again while selecting cancels the selection.
+        if busy {
+            areaSelector?.cancelSelection()
+            return
+        }
         busy = true
         Task {
             do {
@@ -278,7 +282,10 @@ final class CaptureCoordinator {
 
     /// Window capture: pick the window in Declic's window picker.
     func captureWindow() {
-        guard !busy else { return }
+        if busy {
+            if MissionControlPicker.shared.isPicking { MissionControlPicker.shared.cancel() }
+            return
+        }
         busy = true
         MissionControlPicker.shared.pick { [weak self] candidate in
             guard let self else { return }

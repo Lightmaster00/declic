@@ -2,22 +2,13 @@
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#FBF3EC"/>
+      <stop offset="1" stop-color="#FBF5EF"/>
     </linearGradient>
-    <linearGradient id="arrow" gradientUnits="userSpaceOnUse" x1="300" y1="0" x2="382" y2="0">
-      <stop offset="0" stop-color="#FF8A3D"/>
-      <stop offset="1" stop-color="#E8344E"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.45" r="0.6">
-      <stop offset="0" stop-color="#FF5B3A" stop-opacity="0.07"/>
-      <stop offset="1" stop-color="#FF5B3A" stop-opacity="0"/>
-    </radialGradient>
   </defs>
   <rect width="680" height="400" fill="url(#bg)"/>
-  <rect width="680" height="400" fill="url(#glow)"/>
-  <!-- Arrow from the app (left) to Applications (right) -->
-  <g fill="none" stroke="url(#arrow)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M302 190 H378"/>
-    <path d="M364 176 L380 190 L364 204"/>
+  <!-- Arrow centred between the two icons (icon centres: x 190 and 490, y 172) -->
+  <g fill="none" stroke="#16151D" stroke-opacity="0.28" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M308 172 H370"/>
+    <path d="M361 163 L371 172 L361 181"/>
   </g>
 </svg>
