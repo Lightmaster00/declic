@@ -32,7 +32,7 @@ enum WindowThumbnails {
     }
 }
 
-/// Déclic's Mission Control-style picker: every window spreads out over the wallpaper,
+/// Declic's Mission Control-style picker: every window spreads out over the wallpaper,
 /// you pick one, then everything returns exactly as it was. No app is
 /// activated and no Space switches: it's just a layer over the screen.
 @MainActor

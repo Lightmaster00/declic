@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Déclic</string>
+	<string>Declic</string>
 	<key>CFBundleExecutable</key>
 	<string>Declic</string>
 	<key>CFBundleIconFile</key>
@@ -23,7 +23,7 @@
 		<string>ja</string>
 	</array>
 	<key>CFBundleName</key>
-	<string>Déclic</string>
+	<string>Declic</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -37,12 +37,12 @@
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSDesktopFolderUsageDescription</key>
-	<string>Déclic saves your screenshots and recordings to the Desktop.</string>
+	<string>Declic saves your screenshots and recordings to the Desktop.</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2026 Déclic</string>
+	<string>© 2026 Declic</string>
 	<key>NSScreenCaptureUsageDescription</key>
-	<string>Déclic needs Screen Recording access to take screenshots and record videos.</string>
+	<string>Declic needs Screen Recording access to take screenshots and record videos.</string>
 </dict>
 </plist>

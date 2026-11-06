@@ -1,7 +1,7 @@
 #!/bin/bash
-# Builds Déclic.
+# Builds Declic.
 #
-#   ./build.sh           build "build/Déclic.app"
+#   ./build.sh           build "build/Declic.app"
 #   ./build.sh run       build, then launch the app
 #   ./build.sh install   build, install to /Applications and relaunch (recommended)
 #   ./build.sh test      run the automated tests
@@ -22,8 +22,8 @@ cd "$(dirname "$0")"
 IDENTITY="Declic Local Signing"
 KEYCHAIN="$HOME/Library/Keychains/login.keychain-db"
 OPENSSL=/usr/bin/openssl
-APP="build/Déclic.app"
-INSTALLED="/Applications/Déclic.app"
+APP="build/Declic.app"
+INSTALLED="/Applications/Declic.app"
 BUNDLE_ID="com.lightmaster.declic"
 
 if [[ "${1:-}" == "test" ]]; then
@@ -66,7 +66,7 @@ make_dmg() {
     cp -R "$APP" "$stage/"
     ln -s /Applications "$stage/Applications"
     rm -f "$dmg"
-    hdiutil create -volname "Déclic" -srcfolder "$stage" -ov -format UDZO -quiet "$dmg"
+    hdiutil create -volname "Declic" -srcfolder "$stage" -ov -format UDZO -quiet "$dmg"
     rm -rf "$stage"
     if [[ "$SIGN_ID" != "-" ]]; then
         codesign --force --sign "$SIGN_ID" ${EXTRA_SIGN_FLAGS[@]+"${EXTRA_SIGN_FLAGS[@]}"} "$dmg" 2>/dev/null || true
@@ -120,7 +120,7 @@ case "${1:-}" in
     install)
         pkill -x Declic 2>/dev/null || true
         sleep 0.4
-        rm -rf "$INSTALLED"
+        rm -rf /Applications/D*clic.app   # also removes the old accented name
         ditto "$APP" "$INSTALLED"
         echo "📦 Installed to $INSTALLED"
         open "$INSTALLED"

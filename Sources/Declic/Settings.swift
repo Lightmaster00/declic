@@ -391,7 +391,7 @@ struct AboutSettings: View {
             Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
                 .frame(width: 84, height: 84)
-            Text("Déclic")
+            Text("Declic")
                 .font(.system(size: 22, weight: .bold, design: .rounded))
             Text(S.tagline)
                 .font(.system(size: 13, weight: .medium))

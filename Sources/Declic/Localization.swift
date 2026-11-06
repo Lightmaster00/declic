@@ -40,7 +40,7 @@ enum S {
     static var playSound: String { tr("Capture Sound", "Son de capture", "Sonido de captura", "Aufnahmeton", "キャプチャ音") }
     static var showClicks: String { tr("Show Clicks in Recordings", "Afficher les clics dans les vidéos", "Mostrar clics en grabaciones", "Klicks in Aufnahmen zeigen", "収録でクリックを表示") }
     static var requiresMacOS15: String { tr("Requires macOS 15", "Nécessite macOS 15", "Requiere macOS 15", "Erfordert macOS 15", "macOS 15 が必要です") }
-    static var quit: String { tr("Quit Déclic", "Quitter Déclic", "Salir de Déclic", "Déclic beenden", "Déclic を終了") }
+    static var quit: String { tr("Quit Declic", "Quitter Declic", "Salir de Declic", "Declic beenden", "Declic を終了") }
     static var choose: String { tr("Choose", "Choisir", "Elegir", "Auswählen", "選択") }
 
     // MARK: Recording
@@ -105,11 +105,11 @@ enum S {
     // MARK: Errors
     static var captureFailed: String { tr("Capture failed", "Capture impossible", "No se pudo capturar", "Aufnahme fehlgeschlagen", "キャプチャできませんでした") }
     static var permissionHelp: String { tr(
-        "Make sure Déclic is allowed in System Settings › Privacy & Security › Screen & System Audio Recording, then relaunch the app.",
-        "Vérifie que Déclic est autorisé dans Réglages Système › Confidentialité et sécurité › Enregistrement de l'écran et de l'audio système, puis relance l'app.",
-        "Asegúrate de que Déclic esté permitido en Ajustes del Sistema › Privacidad y seguridad › Grabación de pantalla y audio del sistema, y vuelve a abrir la app.",
-        "Erlaube Déclic unter Systemeinstellungen › Datenschutz & Sicherheit › Bildschirm- & Systemaudioaufnahme und starte die App neu.",
-        "システム設定 › プライバシーとセキュリティ › 画面収録とシステムオーディオ録音 で Déclic を許可し、アプリを再起動してください。") }
+        "Make sure Declic is allowed in System Settings › Privacy & Security › Screen & System Audio Recording, then relaunch the app.",
+        "Vérifie que Declic est autorisé dans Réglages Système › Confidentialité et sécurité › Enregistrement de l'écran et de l'audio système, puis relance l'app.",
+        "Asegúrate de que Declic esté permitido en Ajustes del Sistema › Privacidad y seguridad › Grabación de pantalla y audio del sistema, y vuelve a abrir la app.",
+        "Erlaube Declic unter Systemeinstellungen › Datenschutz & Sicherheit › Bildschirm- & Systemaudioaufnahme und starte die App neu.",
+        "システム設定 › プライバシーとセキュリティ › 画面収録とシステムオーディオ録音 で Declic を許可し、アプリを再起動してください。") }
     static var openSettings: String { tr("Open Settings", "Ouvrir les réglages", "Abrir Ajustes", "Einstellungen öffnen", "設定を開く") }
     static var ok: String { "OK" }
     static var saveFailed: String { tr("Couldn't save", "Enregistrement impossible", "No se pudo guardar", "Sichern fehlgeschlagen", "保存できませんでした") }

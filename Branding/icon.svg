@@ -22,7 +22,7 @@
   </g>
   <rect x="100" y="100" width="824" height="824" rx="186" ry="186" fill="url(#gloss)"/>
   <rect x="101.5" y="101.5" width="821" height="821" rx="185" ry="185" fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="3"/>
-  <!-- Viseur : quatre coins (le symbole de Déclic) -->
+  <!-- Viseur : quatre coins (le symbole de Declic) -->
   <g fill="none" stroke="#FFFFFF" stroke-width="58" stroke-linecap="round" stroke-linejoin="round" filter="url(#soft)">
     <path d="M300 420 V340 Q300 300 340 300 H420"/>
     <path d="M604 300 H684 Q724 300 724 340 V420"/>

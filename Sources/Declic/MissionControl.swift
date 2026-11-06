@@ -1,7 +1,7 @@
 import AppKit
 import ApplicationServices
 
-/// Window picking with Déclic's own Mission Control-style gallery (see WindowGallery).
+/// Window picking with Declic's own Mission Control-style gallery (see WindowGallery).
 /// Nothing changes on screen after picking: no app is activated and no Space switches.
 @MainActor
 final class MissionControlPicker {

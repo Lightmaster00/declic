@@ -78,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard let button = statusItem?.button else { return }
         let recording = RecordingController.shared.isRecording
         let image = recording
-            ? NSImage(systemSymbolName: "stop.circle.fill", accessibilityDescription: "Déclic")
+            ? NSImage(systemSymbolName: "stop.circle.fill", accessibilityDescription: "Declic")
             : Brand.menuBarIcon()
         image?.isTemplate = !recording
         button.image = image
@@ -194,7 +194,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let main = NSMenu()
 
         let appItem = NSMenuItem()
-        let appMenu = NSMenu(title: "Déclic")
+        let appMenu = NSMenu(title: "Declic")
         let settings = appMenu.addItem(withTitle: S.settings, action: #selector(openSettings), keyEquivalent: ",")
         settings.target = self
         appMenu.addItem(.separator())

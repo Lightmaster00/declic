@@ -78,7 +78,7 @@ enum Capturer {
         return content.displays.first { $0.displayID == id }
     }
 
-    /// Filter for a whole display, without Déclic's windows (except the desktop-icon cover).
+    /// Filter for a whole display, without Declic's windows (except the desktop-icon cover).
     static func displayFilter(_ display: SCDisplay, content: SCShareableContent) -> SCContentFilter {
         let pid = ProcessInfo.processInfo.processIdentifier
         let own = content.applications.filter { $0.processID == pid }
@@ -276,7 +276,7 @@ final class CaptureCoordinator {
         }
     }
 
-    /// Window capture: pick the window in Déclic's window picker.
+    /// Window capture: pick the window in Declic's window picker.
     func captureWindow() {
         guard !busy else { return }
         busy = true

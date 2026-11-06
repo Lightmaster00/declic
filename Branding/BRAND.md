@@ -1,8 +1,9 @@
-# Déclic — brand guide
+# Declic — brand guide
 
 ## Name
-**Déclic** is French for the *click* of a camera shutter — and for the moment something suddenly
-makes sense. Written "Déclic" with the accent; in technical places (files, identifiers): `declic`.
+**Declic** — always written without an accent, everywhere (app, website, files, code).
+It comes from the French word *déclic*: the click of a camera shutter, and the moment something
+suddenly makes sense. Lower case in technical places (files, identifiers): `declic`.
 
 ## Promise
 **Capture, annotate, share — in one click.**
@@ -35,4 +36,4 @@ A viewfinder: four rounded corners with nothing in the middle — what matters i
 
 ## Typography
 SF Pro (the system font) in the app and on the website; headings in *Bold*, *Rounded* for the
-"Déclic" name.
+"Declic" name.

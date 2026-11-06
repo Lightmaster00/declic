@@ -1,16 +1,16 @@
-# Déclic
+# Declic
 
 **Capture, annotate, share — in one click.**
 Screenshots, scrolling capture, video and GIF recording for macOS 14+.
 A native app (Swift, ScreenCaptureKit), **free and open source** (MIT): everything stays on your Mac.
 
-**[Download Déclic](https://github.com/Lightmaster00/declic/releases/latest/download/Declic.dmg)** · [Website](https://lightmaster00.github.io/declic/) · [All releases](https://github.com/Lightmaster00/declic/releases)
+**[Download Declic](https://github.com/Lightmaster00/declic/releases/latest/download/Declic.dmg)** · [Website](https://lightmaster00.github.io/declic/) · [All releases](https://github.com/Lightmaster00/declic/releases)
 
 ![Icon](Branding/icon-256.png)
 
 ## Install
 
-1. Download `Declic.dmg`, open it and drag **Déclic** into *Applications*.
+1. Download `Declic.dmg`, open it and drag **Declic** into *Applications*.
 2. On first launch, macOS may say the app comes from an unidentified developer:
    open *System Settings › Privacy & Security* and click **Open Anyway**.
 3. Allow *Screen Recording* (and *Accessibility* for auto-scroll).
@@ -36,7 +36,7 @@ Every shortcut can be changed in **Settings › Shortcuts**.
   scrolls when it's taller than the screen.
 - **Annotation editor**: arrows, shapes, text, highlighter, pixelate, numbered steps, crop,
   undo / redo, zoom (pinch, ⌘+ / ⌘− / ⌘0 / ⌘1, Space + drag).
-- **Scrolling capture**: Déclic finds the area that scrolls under your pointer (ignoring toolbars and
+- **Scrolling capture**: Declic finds the area that scrolls under your pointer (ignoring toolbars and
   other panes) and stitches the content. Auto-scroll requires the *Accessibility* permission.
 - **Recording**: resizable area, countdown, cursor and clicks, GIF export.
 - **History**: every capture and video, with copy, save, annotate and delete.
@@ -45,7 +45,7 @@ Every shortcut can be changed in **Settings › Shortcuts**.
 ## Development
 
 ```bash
-./build.sh install   # build, install /Applications/Déclic.app and relaunch
+./build.sh install   # build, install /Applications/Declic.app and relaunch
 ./build.sh test      # automated tests
 ./build.sh run       # launch the build/ copy without installing it
 ./build.sh dmg       # build/Declic.dmg
@@ -104,4 +104,4 @@ site/                             website (published with GitHub Pages)
 
 ## License
 
-MIT — see [LICENSE](LICENSE). The "Déclic" name and icon identify this project.
+MIT — see [LICENSE](LICENSE). The "Declic" name and icon identify this project.

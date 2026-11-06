@@ -32,9 +32,9 @@ final class OverlayWindow: NSPanel {
 
 /// Overlay cursor.
 ///
-/// Déclic isn't the active app during a selection (so nothing changes on screen),
+/// Declic isn't the active app during a selection (so nothing changes on screen),
 /// so macOS normally hands the cursor back to the app underneath: you'd see the crosshair,
-/// then the arrow or a text cursor. Déclic is allowed to set the cursor in the background
+/// then the arrow or a text cursor. Declic is allowed to set the cursor in the background
 /// and keeps re-applying it while an overlay is open.
 @MainActor
 enum OverlayCursor {

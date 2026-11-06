@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// Déclic's visual identity.
+/// Declic's visual identity.
 ///
 /// - Coral #FF5B3A (primary), apricot #FF8A3D and raspberry #E8344E (icon gradient).
 /// - Ink #16151D for text on light backgrounds, paper #FBF7F2 for light backgrounds.

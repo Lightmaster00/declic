@@ -4,12 +4,12 @@ import SwiftUI
 
 /// Automatic updates from the project's GitHub Releases.
 ///
-/// - At launch and every 24 h (when enabled), Déclic queries
+/// - At launch and every 24 h (when enabled), Declic queries
 /// `api.github.com/repos/<repo>/releases/latest`.
 /// - If the published version is newer, a dialog offers to install it.
 /// - The release's `.zip` is downloaded; the app inside must carry
 /// the same signature as the installed app (otherwise it's rejected), then it replaces
-/// the app in place and Déclic relaunches. Nothing opens in Terminal.
+/// the app in place and Declic relaunches. Nothing opens in Terminal.
 ///
 /// The repository comes from the `DeclicGitHubRepo` Info.plist key ("owner/repo").
 @MainActor
