@@ -99,15 +99,27 @@ CNF
 }
 
 make_dmg() {
-    local dmg="build/Declic.dmg" stage
-    stage=$(mktemp -d)
-    cp -R "$APP" "$stage/"
-    ln -s /Applications "$stage/Applications"
+    local dmg="build/Declic.dmg"
     rm -f "$dmg"
-    hdiutil create -volname "Declic" -srcfolder "$stage" -ov -format UDZO -quiet "$dmg"
-    rm -rf "$stage"
-    if [[ "$SIGN_ID" != "-" ]]; then
-        codesign --force --sign "$SIGN_ID" ${EXTRA_SIGN_FLAGS[@]+"${EXTRA_SIGN_FLAGS[@]}"} "$dmg" 2>/dev/null || true
+    if python3 -c "import dmgbuild" 2>/dev/null; then
+        # Installer window: large app icon on the left, Applications folder on the right.
+        local background="build/dmg-background.tiff"
+        tiffutil -cathidpicheck Branding/dmg-background.png Branding/dmg-background@2x.png \
+            -out "$background" >/dev/null 2>&1 || background="Branding/dmg-background.png"
+        python3 -m dmgbuild -s Branding/dmg-settings.py -D app="$APP" -D background="$background" \
+            -D icon=Resources/AppIcon.icns "Declic" "$dmg" >/dev/null
+    else
+        echo "ℹ️  dmgbuild not found (pip3 install dmgbuild): creating a plain DMG."
+        local stage
+        stage=$(mktemp -d)
+        cp -R "$APP" "$stage/"
+        ln -s /Applications "$stage/Applications"
+        hdiutil create -volname "Declic" -srcfolder "$stage" -ov -format UDZO -quiet "$dmg"
+        rm -rf "$stage"
+    fi
+    # Only a Developer ID signature helps Gatekeeper; a self-signed one on the DMG would not.
+    if [[ "$SIGN_ID" == Developer\ ID* ]]; then
+        codesign --force --sign "$SIGN_ID" --timestamp "$dmg"
     fi
     echo "💿 $dmg ready"
 }

@@ -78,6 +78,7 @@ jobs:
 
       - name: Build the app and the DMG
         run: |
+          pip3 install --break-system-packages dmgbuild || pip3 install dmgbuild
           SIGN_ID="Declic Signing" RELEASE=1 GITHUB_REPO="$GITHUB_REPOSITORY" ./build.sh dmg
           codesign --verify --deep --strict "build/Declic.app"
           codesign -dr - "build/Declic.app" 2>&1 | grep -q "certificate leaf" || { echo "::error::Not signed with the certificate"; exit 1; }
