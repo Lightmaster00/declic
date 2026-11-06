@@ -6,7 +6,6 @@ makes sense. Written "Déclic" with the accent; in technical places (files, iden
 
 ## Promise
 **Capture, annotate, share — in one click.**
-*Capture, annote, partage — en un déclic.* (French)
 
 Three pillars to repeat everywhere:
 1. **Fast** — one shortcut, a capture ready to paste.

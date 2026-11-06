@@ -119,7 +119,6 @@ case "${1:-}" in
         ;;
     install)
         pkill -x Declic 2>/dev/null || true
-        pkill -x ShotKit 2>/dev/null || true   # previous name
         sleep 0.4
         rm -rf "$INSTALLED"
         ditto "$APP" "$INSTALLED"

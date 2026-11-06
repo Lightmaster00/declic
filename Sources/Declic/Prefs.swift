@@ -61,7 +61,6 @@ enum PrefKey {
     static let afterCopy = "after.copy"
     static let afterSave = "after.save"
     static let afterAnnotate = "after.annotate"
-    static let afterPin = "after.pin"
     static let recAfterQuickAccess = "rec.after.quickAccess"
     static let recAfterCopy = "rec.after.copy"
     static let recAfterSave = "rec.after.save"
@@ -111,7 +110,6 @@ final class Prefs {
             PrefKey.afterCopy: false,
             PrefKey.afterSave: false,
             PrefKey.afterAnnotate: false,
-            PrefKey.afterPin: false,
             PrefKey.recAfterQuickAccess: true,
             PrefKey.recAfterCopy: false,
             PrefKey.recAfterSave: false,
@@ -177,7 +175,6 @@ final class Prefs {
     var afterCopy: Bool { d.bool(forKey: PrefKey.afterCopy) }
     var afterSave: Bool { d.bool(forKey: PrefKey.afterSave) }
     var afterAnnotate: Bool { d.bool(forKey: PrefKey.afterAnnotate) }
-    var afterPin: Bool { d.bool(forKey: PrefKey.afterPin) }
     var recAfterQuickAccess: Bool { d.bool(forKey: PrefKey.recAfterQuickAccess) }
     var recAfterCopy: Bool { d.bool(forKey: PrefKey.recAfterCopy) }
     var recAfterSave: Bool { d.bool(forKey: PrefKey.recAfterSave) }

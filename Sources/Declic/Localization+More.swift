@@ -47,7 +47,6 @@ extension S {
     static var copyFileToClipboard: String { tr("Copy file to clipboard", "Copier le fichier dans le presse-papiers", "Copiar archivo al portapapeles", "Datei in die Zwischenablage kopieren", "ファイルをクリップボードにコピー") }
     static var saveToFolder: String { tr("Save to folder", "Enregistrer dans le dossier", "Guardar en la carpeta", "Im Ordner sichern", "フォルダに保存") }
     static var openAnnotate: String { tr("Open annotation editor", "Ouvrir l'éditeur d'annotations", "Abrir el editor de anotaciones", "Anmerkungseditor öffnen", "注釈エディタを開く") }
-    static var pinToScreen: String { tr("Pin to screen", "Épingler à l'écran", "Fijar en pantalla", "Am Bildschirm anheften", "画面にピン留め") }
 
     // MARK: Captures
     static var fileSection: String { tr("File", "Fichier", "Archivo", "Datei", "ファイル") }
@@ -97,7 +96,6 @@ extension S {
     static var showCursor: String { tr("Show cursor", "Afficher le pointeur", "Mostrar puntero", "Zeiger anzeigen", "ポインタを表示") }
     static var countdown: String { tr("Countdown", "Compte à rebours", "Cuenta atrás", "Countdown", "カウントダウン") }
     static var maxWidth: String { tr("Maximum width", "Largeur maximale", "Ancho máximo", "Maximale Breite", "最大幅") }
-    static var clickToSelect: String { tr("Click to select", "Clique pour sélectionner", "Haz clic para seleccionar", "Zum Auswählen klicken", "クリックで選択") }
 
     // MARK: Shortcuts
     static var typeShortcut: String { tr("Type shortcut…", "Tape le raccourci…", "Pulsa el atajo…", "Kurzbefehl drücken …", "ショートカットを入力…") }
@@ -131,7 +129,6 @@ extension S {
     }
 
     // MARK: Scrolling capture
-    static var clickToScroll: String { tr("Click the window to scroll", "Clique sur la fenêtre à faire défiler", "Haz clic en la ventana a desplazar", "Zu scrollendes Fenster anklicken", "スクロールするウインドウをクリック") }
     static var autoScroll: String { tr("Auto-scroll", "Défilement automatique", "Desplazamiento automático", "Automatisch scrollen", "自動スクロール") }
     static var autoScrolling: String { tr("Scrolling automatically…", "Défilement automatique…", "Desplazando automáticamente…", "Scrollt automatisch …", "自動スクロール中…") }
 
@@ -141,30 +138,27 @@ extension S {
            "Haz clic en una ventana para capturarla · Esc para cancelar", "Fenster anklicken zum Aufnehmen · Esc zum Abbrechen",
            "ウインドウをクリックしてキャプチャ · Esc でキャンセル")
     }
-    static var clickToPreview: String { tr("Click to preview", "Clique pour l'aperçu", "Haz clic para previsualizar", "Klicken für Vorschau", "クリックでプレビュー") }
-    static var pinShort: String { tr("Pin", "Épingler", "Fijar", "Anheften", "ピン留め") }
     static var options: String { tr("Options", "Options", "Opciones", "Optionen", "オプション") }
 
-    // MARK: Scrolling capture / thumbnails
+    // MARK: Scrolling capture
     static var tooFast: String { tr("Too fast — scroll back up a little", "Trop rapide — remonte un peu", "Demasiado rápido — sube un poco", "Zu schnell – etwas zurückscrollen", "速すぎます — 少し戻してください") }
     static var maxHeightReached: String { tr("Maximum height reached", "Hauteur maximale atteinte", "Altura máxima alcanzada", "Maximale Höhe erreicht", "最大の高さに達しました") }
     static var clickToAnnotate: String { tr("Click to annotate", "Clique pour annoter", "Haz clic para anotar", "Klicken zum Kommentieren", "クリックで注釈") }
 
     // MARK: Update
-    static var updateApp: String { tr("Update Déclic", "Mettre à jour Déclic", "Actualizar Déclic", "Déclic aktualisieren", "Déclic をアップデート") }
-    static var updating: String { tr("Updating… Déclic will restart", "Mise à jour… Déclic va redémarrer", "Actualizando… Déclic se reiniciará", "Aktualisierung … Déclic startet neu", "アップデート中… Déclic は再起動します") }
     static var updateFailed: String { tr("Update failed", "La mise à jour a échoué", "Error al actualizar", "Aktualisierung fehlgeschlagen", "アップデートに失敗しました") }
-    static var updateFailedHelp: String { tr("The build did not finish. The log shows the error.", "La compilation n'a pas abouti. Le journal indique l'erreur.", "La compilación no terminó. El registro muestra el error.", "Der Build wurde nicht abgeschlossen. Das Protokoll zeigt den Fehler.", "ビルドが完了しませんでした。ログにエラーが表示されています。") }
-    static var showLog: String { tr("Show Log", "Afficher le journal", "Ver registro", "Protokoll zeigen", "ログを表示") }
 
-    // MARK: Keep thumbnail
+    // MARK: Quick Access thumbnail
     static var pinCard: String { tr("Keep this thumbnail", "Garder cette vignette", "Mantener esta miniatura", "Diese Vorschau behalten", "このサムネイルを残す") }
     static var unpinCard: String { tr("Stop keeping this thumbnail", "Ne plus garder cette vignette", "Dejar de mantener la miniatura", "Vorschau nicht mehr behalten", "サムネイルを残さない") }
     static var areaHint: String { tr("Drag to capture · Space: window", "Glisse pour capturer · Espace : fenêtre", "Arrastra para capturar · Espacio: ventana", "Ziehen zum Aufnehmen · Leertaste: Fenster", "ドラッグでキャプチャ · スペース: ウインドウ") }
+
+    // MARK: Editor zoom
     static var zoomIn: String { tr("Zoom In", "Zoom avant", "Acercar", "Vergrößern", "拡大") }
     static var zoomOut: String { tr("Zoom Out", "Zoom arrière", "Alejar", "Verkleinern", "縮小") }
     static var zoomFit: String { tr("Fit to Window", "Ajuster à la fenêtre", "Ajustar a la ventana", "An Fenster anpassen", "ウインドウに合わせる") }
     static var zoomActual: String { tr("Actual Size", "Taille réelle", "Tamaño real", "Originalgröße", "実際のサイズ") }
+
     // MARK: Updates (GitHub)
     static var checkForUpdates: String { tr("Check for Updates…", "Rechercher des mises à jour…", "Buscar actualizaciones…", "Nach Updates suchen …", "アップデートを確認…") }
     static var autoCheckUpdates: String { tr("Check for updates automatically", "Rechercher les mises à jour automatiquement", "Buscar actualizaciones automáticamente", "Automatisch nach Updates suchen", "自動的にアップデートを確認") }

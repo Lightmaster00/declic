@@ -270,12 +270,6 @@ final class EditorState: ObservableObject {
         }
     }
 
-    func pin() {
-        guard let img = renderFlattened() else { return }
-        PinManager.shared.pin(image: img, scale: pixelScale, origin: nil)
-        flash(S.pinned)
-    }
-
     func saveAs(from window: NSWindow?) {
         guard let img = renderFlattened() else { return }
         let panel = NSSavePanel()

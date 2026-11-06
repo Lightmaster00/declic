@@ -164,7 +164,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func stopRecording() { RecordingController.shared.stop(cancel: false) }
-    @objc private func closePins() { PinManager.shared.closeAll() }
     @objc private func openSettings() { SettingsWindowController.show() }
     @objc private func updateApp() { Updater.checkNow() }
 

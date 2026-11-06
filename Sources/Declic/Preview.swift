@@ -79,12 +79,6 @@ final class PreviewModel: ObservableObject {
         window?.close()
     }
 
-    func pin(closing window: NSWindow?) {
-        guard case .image(let image, let scale, let origin) = content else { return }
-        PinManager.shared.pin(image: image, scale: scale, origin: origin)
-        window?.close()
-    }
-
     func openInDefaultApp() {
         guard case .video(let url, _) = content else { return }
         NSWorkspace.shared.open(url)

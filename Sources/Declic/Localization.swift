@@ -29,18 +29,14 @@ enum S {
     // MARK: Menu
     static var sectionCapture: String { tr("Capture", "Capture", "Captura", "Aufnahme", "キャプチャ") }
     static var sectionRecord: String { tr("Recording", "Enregistrement", "Grabación", "Video", "収録") }
-    static var sectionOptions: String { tr("Options", "Options", "Opciones", "Optionen", "オプション") }
     static var captureArea: String { tr("Capture Area", "Capturer une zone", "Capturar área", "Bereich aufnehmen", "範囲をキャプチャ") }
     static var captureFullscreen: String { tr("Capture Fullscreen", "Capturer le plein écran", "Capturar pantalla completa", "Vollbild aufnehmen", "画面全体をキャプチャ") }
     static var captureWindow: String { tr("Capture Window", "Capturer une fenêtre", "Capturar ventana", "Fenster aufnehmen", "ウインドウをキャプチャ") }
     static var scrollingCapture: String { tr("Scrolling Capture", "Capture défilante", "Captura con desplazamiento", "Scroll-Aufnahme", "スクロールキャプチャ") }
     static var recordScreen: String { tr("Record Screen…", "Enregistrer l'écran…", "Grabar pantalla…", "Bildschirm aufnehmen…", "画面を収録…") }
-    static var recordGIF: String { tr("Record GIF…", "Enregistrer un GIF…", "Grabar GIF…", "GIF aufnehmen…", "GIFを収録…") }
     static var stopRecording: String { tr("Stop Recording", "Arrêter l'enregistrement", "Detener grabación", "Aufnahme beenden", "収録を停止") }
     static var openImage: String { tr("Annotate an Image…", "Annoter une image…", "Anotar una imagen…", "Bild kommentieren…", "画像に注釈…") }
     static var openFolder: String { tr("Open Captures Folder", "Ouvrir le dossier des captures", "Abrir carpeta de capturas", "Aufnahmeordner öffnen", "保存先フォルダを開く") }
-    static var changeFolder: String { tr("Change Captures Folder…", "Changer le dossier des captures…", "Cambiar carpeta de capturas…", "Aufnahmeordner ändern…", "保存先を変更…") }
-    static var closePins: String { tr("Close Pinned Images", "Fermer les images épinglées", "Cerrar imágenes fijadas", "Angeheftete Bilder schließen", "ピン留め画像を閉じる") }
     static var playSound: String { tr("Capture Sound", "Son de capture", "Sonido de captura", "Aufnahmeton", "キャプチャ音") }
     static var showClicks: String { tr("Show Clicks in Recordings", "Afficher les clics dans les vidéos", "Mostrar clics en grabaciones", "Klicks in Aufnahmen zeigen", "収録でクリックを表示") }
     static var requiresMacOS15: String { tr("Requires macOS 15", "Nécessite macOS 15", "Requiere macOS 15", "Erfordert macOS 15", "macOS 15 が必要です") }
@@ -57,30 +53,17 @@ enum S {
     static var converting: String { tr("Converting to GIF…", "Conversion en GIF…", "Convirtiendo a GIF…", "GIF wird erstellt…", "GIFに変換中…") }
 
     // MARK: Selection
-    static var hintArea: String { tr("Drag to capture · Return: fullscreen · Esc: cancel",
-                                     "Glisse pour capturer · Entrée : plein écran · Échap : annuler",
-                                     "Arrastra para capturar · Intro: pantalla completa · Esc: cancelar",
-                                     "Ziehen zum Aufnehmen · Eingabe: Vollbild · Esc: Abbrechen",
-                                     "ドラッグでキャプチャ · Return: 全画面 · Esc: キャンセル") }
     static var hintRecordArea: String { tr("Drag to choose the area to record · Esc: cancel",
                                            "Glisse pour choisir la zone à enregistrer · Échap : annuler",
                                            "Arrastra para elegir el área a grabar · Esc: cancelar",
                                            "Ziehen, um den Aufnahmebereich zu wählen · Esc: Abbrechen",
                                            "ドラッグで収録範囲を選択 · Esc: キャンセル") }
-    static var hintScroll: String { tr("Select the content you want to scroll · Esc: cancel",
-                                       "Sélectionne le contenu à faire défiler · Échap : annuler",
-                                       "Selecciona el contenido a desplazar · Esc: cancelar",
-                                       "Wähle den zu scrollenden Inhalt · Esc: Abbrechen",
-                                       "スクロールする範囲を選択 · Esc: キャンセル") }
-    static var clickToCapture: String { tr("Click to capture", "Clique pour capturer", "Haz clic para capturar", "Klicken zum Aufnehmen", "クリックでキャプチャ") }
-    static var clickToRecord: String { tr("Click to record", "Clique pour enregistrer", "Haz clic para grabar", "Klicken zum Filmen", "クリックで収録") }
     static var window: String { tr("Window", "Fenêtre", "Ventana", "Fenster", "ウインドウ") }
 
     // MARK: Thumbnail / keep
     static var copy: String { tr("Copy", "Copier", "Copiar", "Kopieren", "コピー") }
     static var save: String { tr("Save", "Enregistrer", "Guardar", "Sichern", "保存") }
     static var annotate: String { tr("Annotate", "Annoter", "Anotar", "Kommentieren", "注釈") }
-    static var pin: String { tr("Pin to Screen", "Épingler à l'écran", "Fijar en pantalla", "Am Bildschirm anheften", "画面にピン留め") }
     static var close: String { tr("Close", "Fermer", "Cerrar", "Schließen", "閉じる") }
     static var open: String { tr("Open", "Ouvrir", "Abrir", "Öffnen", "開く") }
 
@@ -99,7 +82,6 @@ enum S {
     static var redo: String { tr("Redo", "Rétablir", "Rehacer", "Wiederholen", "やり直す") }
     static var saveAs: String { tr("Save As…", "Enregistrer sous…", "Guardar como…", "Sichern unter…", "別名で保存…") }
     static var copied: String { tr("Copied to clipboard", "Copié dans le presse-papiers", "Copiado al portapapeles", "In die Zwischenablage kopiert", "クリップボードにコピーしました") }
-    static var pinned: String { tr("Pinned to screen", "Épinglée à l'écran", "Fijada en pantalla", "Am Bildschirm angeheftet", "画面にピン留めしました") }
     static var textPlaceholder: String { tr("Text", "Texte", "Texto", "Text", "テキスト") }
     static var editorTitle: String { tr("Annotate", "Annoter", "Anotar", "Kommentieren", "注釈") }
     static var strokeWidth: String { tr("Stroke Width", "Épaisseur", "Grosor", "Linienstärke", "線の太さ") }

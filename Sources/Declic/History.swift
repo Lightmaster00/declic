@@ -152,11 +152,6 @@ final class HistoryStore: ObservableObject {
         EditorWindowController.open(image: image, scale: CGFloat(item.scale))
     }
 
-    func pin(_ item: HistoryItem) {
-        guard let image = image(for: item) else { return }
-        PinManager.shared.pin(image: image, scale: CGFloat(item.scale), origin: nil)
-    }
-
     /// Preview (double click).
     func open(_ item: HistoryItem) {
         if let image = image(for: item) {
