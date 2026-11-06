@@ -94,6 +94,7 @@ enum PrefKey {
     static let historyEnabled = "history.enabled"
     static let historyDays = "history.days"
     static let autoCheckUpdates = "updates.autoCheck"
+    static let lastCaptureArea = "capture.lastArea"
     static let skippedVersion = "updates.skippedVersion"
 }
 
@@ -226,6 +227,16 @@ final class Prefs {
 
     var historyEnabled: Bool { d.bool(forKey: PrefKey.historyEnabled) }
     var historyDays: Int { d.integer(forKey: PrefKey.historyDays) }
+
+    /// Last captured area, in global Cocoa coordinates (for "Capture Previous Area").
+    var lastCaptureArea: CGRect? {
+        get {
+            guard let text = d.string(forKey: PrefKey.lastCaptureArea) else { return nil }
+            let rect = NSRectFromString(text)
+            return rect.width >= 1 && rect.height >= 1 ? rect : nil
+        }
+        set { d.set(newValue.map { NSStringFromRect($0) }, forKey: PrefKey.lastCaptureArea) }
+    }
 }
 
 extension NSColor {

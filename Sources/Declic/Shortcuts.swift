@@ -5,13 +5,14 @@ import SwiftUI
 
 /// Actions available through a global shortcut.
 enum ShortcutAction: String, CaseIterable, Identifiable {
-    case captureArea, captureFullscreen, captureWindow, scrollingCapture, recordVideo, history
+    case captureArea, capturePreviousArea, captureFullscreen, captureWindow, scrollingCapture, recordVideo, history
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .captureArea: return S.captureArea
+        case .capturePreviousArea: return S.capturePreviousArea
         case .captureFullscreen: return S.captureFullscreen
         case .captureWindow: return S.captureWindow
         case .scrollingCapture: return S.scrollingCapture
@@ -23,6 +24,7 @@ enum ShortcutAction: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .captureArea: return "rectangle.dashed"
+        case .capturePreviousArea: return "arrow.counterclockwise"
         case .captureFullscreen: return "display"
         case .captureWindow: return "macwindow"
         case .scrollingCapture: return "arrow.up.and.down.text.horizontal"
@@ -36,6 +38,7 @@ enum ShortcutAction: String, CaseIterable, Identifiable {
         switch self {
         case .captureFullscreen: return KeyCombo(keyCode: kVK_ANSI_3, modifiers: mods)
         case .captureArea: return KeyCombo(keyCode: kVK_ANSI_4, modifiers: mods)
+        case .capturePreviousArea: return KeyCombo(keyCode: kVK_ANSI_P, modifiers: mods)
         case .captureWindow: return KeyCombo(keyCode: kVK_ANSI_5, modifiers: mods)
         case .recordVideo: return KeyCombo(keyCode: kVK_ANSI_6, modifiers: mods)
         case .scrollingCapture: return KeyCombo(keyCode: kVK_ANSI_8, modifiers: mods)

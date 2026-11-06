@@ -26,6 +26,7 @@ Every shortcut can be changed in **Settings › Shortcuts**.
 |-----------|--------|
 | ⌥⇧3 | Full-screen capture |
 | ⌥⇧4 | Area capture — drag = area, Space = pick a window, Shift = square, Return = full screen, Escape = cancel |
+| ⌥⇧P | Capture Previous Area — captures the last area again, without selecting it |
 | ⌥⇧5 | Window capture: every window spreads out, one click captures, you're back where you were instantly |
 | ⌥⇧8 | Scrolling capture: pick the window, scroll (both directions) or use *Auto-scroll*, then *Done* |
 | ⌥⇧6 | Recording: **Area**, **Full Screen** or **App**, as MP4 video or GIF |

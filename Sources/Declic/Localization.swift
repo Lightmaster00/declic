@@ -30,6 +30,7 @@ enum S {
     static var sectionCapture: String { tr("Capture", "Capture", "Captura", "Aufnahme", "キャプチャ") }
     static var sectionRecord: String { tr("Recording", "Enregistrement", "Grabación", "Video", "収録") }
     static var captureArea: String { tr("Capture Area", "Capturer une zone", "Capturar área", "Bereich aufnehmen", "範囲をキャプチャ") }
+    static var capturePreviousArea: String { tr("Capture Previous Area", "Capturer la zone précédente", "Capturar el área anterior", "Vorherigen Bereich aufnehmen", "前回の範囲をキャプチャ") }
     static var captureFullscreen: String { tr("Capture Fullscreen", "Capturer le plein écran", "Capturar pantalla completa", "Vollbild aufnehmen", "画面全体をキャプチャ") }
     static var captureWindow: String { tr("Capture Window", "Capturer une fenêtre", "Capturar ventana", "Fenster aufnehmen", "ウインドウをキャプチャ") }
     static var scrollingCapture: String { tr("Scrolling Capture", "Capture défilante", "Captura con desplazamiento", "Scroll-Aufnahme", "スクロールキャプチャ") }

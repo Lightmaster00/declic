@@ -64,6 +64,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func perform(_ action: ShortcutAction) {
         switch action {
         case .captureArea: CaptureCoordinator.shared.captureArea()
+        case .capturePreviousArea: CaptureCoordinator.shared.capturePreviousArea()
         case .captureFullscreen: CaptureCoordinator.shared.captureFullscreen()
         case .captureWindow: CaptureCoordinator.shared.captureWindow()
         case .scrollingCapture: ScrollCaptureController.shared.start()
@@ -98,6 +99,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         menu.addItem(NSMenuItem.sectionHeader(title: S.sectionCapture))
         addAction(.captureArea, to: menu)
+        addAction(.capturePreviousArea, to: menu)
         addAction(.captureFullscreen, to: menu)
         addAction(.captureWindow, to: menu)
         addAction(.scrollingCapture, to: menu)

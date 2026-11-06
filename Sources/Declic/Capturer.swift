@@ -248,6 +248,7 @@ final class CaptureCoordinator {
                         }
 
                     case .area(let result):
+                        Prefs.shared.lastCaptureArea = result.screenRect
                         if let cropped = result.croppedImage() {
                             self.busy = false
                             self.deliver(cropped, scale: result.shot.screen.backingScaleFactor, origin: result.screenRect)
@@ -275,6 +276,37 @@ final class CaptureCoordinator {
             } catch {
                 DesktopCover.hide()
                 self.busy = false
+                Capturer.presentError(error)
+            }
+        }
+    }
+
+    /// Captures the same area as the last area capture, without selecting it again.
+    /// Falls back to a normal area capture when there is none (or its display is gone).
+    func capturePreviousArea() {
+        if busy {
+            areaSelector?.cancelSelection()
+            return
+        }
+        guard let rect = Prefs.shared.lastCaptureArea else { captureArea(); return }
+        let screen = NSScreen.best(for: rect)
+        let visible = rect.intersection(screen.frame)
+        guard !visible.isNull, visible.width >= 1, visible.height >= 1 else { captureArea(); return }
+        busy = true
+        Task {
+            defer {
+                DesktopCover.hide()
+                self.busy = false
+            }
+            do {
+                await DesktopCover.showIfNeeded()
+                let full = try await Capturer.captureScreen(screen)
+                let local = visible.offsetBy(dx: -screen.frame.minX, dy: -screen.frame.minY)
+                let area = AreaResult(shot: ScreenShot(screen: screen, image: nil, frozen: false), rect: local)
+                if let cropped = area.crop(full) {
+                    self.deliver(cropped, scale: screen.backingScaleFactor, origin: visible)
+                }
+            } catch {
                 Capturer.presentError(error)
             }
         }

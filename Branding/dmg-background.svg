@@ -6,9 +6,10 @@
     </linearGradient>
   </defs>
   <rect width="680" height="400" fill="url(#bg)"/>
-  <!-- Arrow centred between the two icons (icon centres: x 190 and 490, y 172) -->
+  <!-- Arrow centred between the two icons. Finder draws an icon about 17 pt above its
+       stored position (the label sits below), so the arrow is at y 170 for icons stored at y 187. -->
   <g fill="none" stroke="#16151D" stroke-opacity="0.28" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M308 172 H370"/>
-    <path d="M361 163 L371 172 L361 181"/>
+    <path d="M308 170 H370"/>
+    <path d="M361 161 L371 170 L361 179"/>
   </g>
 </svg>

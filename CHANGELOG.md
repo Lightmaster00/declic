@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- New: **Capture Previous Area** (⌥⇧P, also in the menu) captures the last selected area
+  again, without selecting it. If there is none yet, it starts a normal area capture.
+- Installer window: the arrow is now exactly aligned with the icons.
+
 ## 1.0.2
 
 - Much lower memory use with many Quick Access thumbnails, and no pause right after a capture.
