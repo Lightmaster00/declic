@@ -2,47 +2,47 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleIdentifier</key>
-    <string>com.lightmaster.declic</string>
-    <key>CFBundleName</key>
-    <string>Déclic</string>
-    <key>CFBundleDisplayName</key>
-    <string>Déclic</string>
-    <key>CFBundleExecutable</key>
-    <string>Declic</string>
-    <key>CFBundleIconFile</key>
-    <string>AppIcon</string>
-    <key>NSHumanReadableCopyright</key>
-    <string>© 2026 Déclic</string>
-    <key>LSApplicationCategoryType</key>
-    <string>public.app-category.productivity</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleDevelopmentRegion</key>
-    <string>en</string>
-    <key>CFBundleLocalizations</key>
-    <array>
-        <string>en</string>
-        <string>fr</string>
-        <string>es</string>
-        <string>de</string>
-        <string>ja</string>
-    </array>
-    <key>CFBundleAllowMixedLocalizations</key>
-    <true/>
-    <key>NSDesktopFolderUsageDescription</key>
-    <string>Déclic saves your screenshots and recordings to the Desktop.</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
-    <key>CFBundleVersion</key>
-    <string>1</string>
-    <key>LSMinimumSystemVersion</key>
-    <string>14.0</string>
-    <key>LSUIElement</key>
-    <true/>
-    <key>NSHighResolutionCapable</key>
-    <true/>
-    <key>NSScreenCaptureUsageDescription</key>
-    <string>Déclic needs Screen Recording access to take screenshots and record videos.</string>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<true/>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Déclic</string>
+	<key>CFBundleExecutable</key>
+	<string>Declic</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.lightmaster.declic</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>fr</string>
+		<string>es</string>
+		<string>de</string>
+		<string>ja</string>
+	</array>
+	<key>CFBundleName</key>
+	<string>Déclic</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>3</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>Déclic saves your screenshots and recordings to the Desktop.</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>© 2026 Déclic</string>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>Déclic needs Screen Recording access to take screenshots and record videos.</string>
 </dict>
 </plist>
