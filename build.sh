@@ -6,9 +6,11 @@
 #   ./build.sh install   build, install to /Applications and relaunch (recommended)
 #   ./build.sh test      run the automated tests
 #   ./build.sh dmg       build, then create "build/Declic.dmg"
+#   ./build.sh setup-signing   one time only: create the signing certificate and give it to
+#                              GitHub, so GitHub can publish signed releases by itself
 #
 # The app is signed with a local certificate created automatically the first time
-# ("Declic Local Signing", in your login keychain). The signature stays the same from one
+# ("Declic Signing", in your login keychain). The signature stays the same from one
 # build to the next, so macOS keeps its permissions (Screen Recording, Accessibility…)
 # after every update.
 #
@@ -19,7 +21,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-IDENTITY="Declic Local Signing"
+IDENTITY="Declic Signing"
 KEYCHAIN="$HOME/Library/Keychains/login.keychain-db"
 OPENSSL=/usr/bin/openssl
 APP="build/Declic.app"
@@ -28,6 +30,42 @@ BUNDLE_ID="com.lightmaster.declic"
 
 if [[ "${1:-}" == "test" ]]; then
     swift test
+    exit 0
+fi
+
+# One-time setup: a single certificate signs both your local builds and the releases built by
+# GitHub, so updates are accepted and macOS keeps its permissions.
+if [[ "${1:-}" == "setup-signing" ]]; then
+    REPO="$(cat .github-repo 2>/dev/null | tr -d '[:space:]')"
+    command -v gh >/dev/null || { echo "❌ Install the GitHub CLI first: brew install gh && gh auth login"; exit 1; }
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
+    password=$("$OPENSSL" rand -hex 24)
+    cat > "$tmp/cert.cnf" <<CNF
+[req]
+distinguished_name = dn
+prompt = no
+[dn]
+CN = $IDENTITY
+[ext]
+basicConstraints = critical,CA:false
+keyUsage = critical,digitalSignature
+extendedKeyUsage = critical,codeSigning
+CNF
+    "$OPENSSL" req -x509 -newkey rsa:2048 -nodes -days 7300 \
+        -keyout "$tmp/key.pem" -out "$tmp/cert.pem" -config "$tmp/cert.cnf" -extensions ext >/dev/null 2>&1
+    "$OPENSSL" pkcs12 -export -inkey "$tmp/key.pem" -in "$tmp/cert.pem" -name "$IDENTITY" \
+        -out "$tmp/identity.p12" -passout "pass:$password" >/dev/null 2>&1
+    # Replace any previous certificate with this one.
+    for name in "$IDENTITY" "Declic Local Signing"; do
+        while security delete-identity -c "$name" "$KEYCHAIN" >/dev/null 2>&1; do :; done
+    done
+    security import "$tmp/identity.p12" -k "$KEYCHAIN" -P "$password" -T /usr/bin/codesign >/dev/null
+    echo "macOS may ask for your password to trust the certificate."
+    security add-trusted-cert -r trustRoot -p codeSign -k "$KEYCHAIN" "$tmp/cert.pem" || true
+    base64 -i "$tmp/identity.p12" | gh secret set SIGNING_CERTIFICATE --repo "$REPO"
+    printf %s "$password" | gh secret set SIGNING_PASSWORD --repo "$REPO"
+    echo "✅ Signing is set up. GitHub will now build and publish the DMG for every new version."
     exit 0
 fi
 

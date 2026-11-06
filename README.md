@@ -51,9 +51,8 @@ Every shortcut can be changed in **Settings › Shortcuts**.
 ./build.sh dmg       # build/Declic.dmg
 ```
 
-- **Permissions are kept**: the first build creates a local certificate ("Declic Local Signing") in
-  your keychain; every later build is signed with it, so *Screen Recording* and *Accessibility*
-  aren't asked again.
+- **Permissions are kept**: builds are signed with the "Declic Signing" certificate from your
+  keychain (created on the first build), so *Screen Recording* and *Accessibility* aren't asked again.
 - **Continuous integration**: every push builds the app, runs the tests and produces a DMG on a Mac
   (repository *Actions* tab).
 - **Scrolling capture log**: `build/debug/scroll.log` (development build) or
@@ -61,18 +60,19 @@ Every shortcut can be changed in **Settings › Shortcuts**.
 
 ## Publishing a release
 
-```bash
-brew install gh && gh auth login     # once
-./release.sh 1.0.1 "What's new"
-```
+Releases are built and published by GitHub automatically
+([Release workflow](.github/workflows/release.yml)):
 
-This builds and signs the app, then publishes `Declic.dmg` (for downloads) and `Declic.zip`
-(for in-app updates) as a GitHub release. Installed copies check for updates at launch and every
-24 hours (can be turned off in Settings › General) and offer *Install and Restart*. A version signed
-with a different certificate than the installed app is rejected, so always publish from the same Mac.
+1. Change `CFBundleShortVersionString` in `Resources/Info.plist` (e.g. `1.0.1`) and push to `main`.
+2. GitHub tests the app, builds and signs it, and publishes `Declic.dmg` (downloads) and
+   `Declic.zip` (in-app updates) on the [Releases](https://github.com/Lightmaster00/declic/releases) page.
 
-With an Apple *Developer ID* certificate and notarization (see the header of `release.sh`), the
-"unidentified developer" warning goes away.
+Installed copies check for updates at launch and every 24 hours (can be turned off in
+Settings › General) and offer *Install and Restart*.
+
+**One-time setup** (repository owner): `./build.sh setup-signing` creates the signing certificate,
+installs it in your keychain and stores it as a GitHub secret. Local builds and GitHub releases then
+share the same signature, so updates are accepted and macOS keeps its permissions.
 
 ## Contributing
 

@@ -1,0 +1,96 @@
+name: Release
+
+# Publishes Declic.dmg (downloads) and Declic.zip (in-app updates) on the Releases page
+# whenever the version in Resources/Info.plist has no release yet.
+# To publish a new version: change CFBundleShortVersionString in Resources/Info.plist and push.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Is there a new version?
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      publish: ${{ steps.version.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(grep -A1 CFBundleShortVersionString Resources/Info.plist | tail -1 | sed -E 's/.*<string>(.*)<\/string>.*/\1/')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if gh release view "v$version" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Version $version is already published."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Version $version will be published."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  release:
+    name: Build and publish Declic ${{ needs.check.outputs.version }}
+    needs: check
+    if: needs.check.outputs.publish == 'true'
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      VERSION: ${{ needs.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test
+        run: swift test
+
+      - name: Import the signing certificate
+        env:
+          SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: |
+          if [[ -z "$SIGNING_CERTIFICATE" ]]; then
+            echo "::error::The signing certificate is missing. Run ./build.sh setup-signing once on your Mac."
+            exit 1
+          fi
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          security create-keychain -p "" "$keychain"
+          security set-keychain-settings "$keychain"
+          security unlock-keychain -p "" "$keychain"
+          echo "$SIGNING_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/identity.p12"
+          security import "$RUNNER_TEMP/identity.p12" -k "$keychain" -P "$SIGNING_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          openssl pkcs12 -in "$RUNNER_TEMP/identity.p12" -nokeys -passin "pass:$SIGNING_PASSWORD" -legacy -out "$RUNNER_TEMP/cert.pem" 2>/dev/null \
+            || openssl pkcs12 -in "$RUNNER_TEMP/identity.p12" -nokeys -passin "pass:$SIGNING_PASSWORD" -out "$RUNNER_TEMP/cert.pem"
+          sudo security add-trusted-cert -d -r trustRoot -p codeSign -k /Library/Keychains/System.keychain "$RUNNER_TEMP/cert.pem"
+          rm -f "$RUNNER_TEMP/identity.p12"
+          security find-identity -p codesigning "$keychain"
+
+      - name: Build the app and the DMG
+        run: |
+          SIGN_ID="Declic Signing" RELEASE=1 GITHUB_REPO="$GITHUB_REPOSITORY" ./build.sh dmg
+          codesign --verify --deep --strict "build/Declic.app"
+          codesign -dr - "build/Declic.app" 2>&1 | grep -q "certificate leaf" || { echo "::error::Not signed with the certificate"; exit 1; }
+          ditto -c -k --keepParent "build/Declic.app" "build/Declic.zip"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$VERSION" build/Declic.dmg build/Declic.zip \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Declic $VERSION" --generate-notes
+
+      - name: Clean up the keychain
+        if: always()
+        run: security delete-keychain "$RUNNER_TEMP/signing.keychain-db" 2>/dev/null || true
