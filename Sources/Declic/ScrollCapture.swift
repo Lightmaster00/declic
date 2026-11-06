@@ -92,6 +92,9 @@ final class CoreStitcher {
     private var pieces: [(y: Int, image: CGImage)] = []
     private var first: ScrollFrame?
     private var reference: ScrollFrame?
+    /// Image qui a fourni le bas de la toile : c'est d'elle que vient le pied de page
+    /// (sinon, en remontant, on collerait sous la toile le bas d'une image plus haute).
+    private var bottomFrame: ScrollFrame?
     /// Haut et bas de la toile (le pied de page fixe est ajouté sous `canvasMax`).
     private var canvasMin = 0
     private var canvasMax = 0
@@ -279,6 +282,7 @@ final class CoreStitcher {
                     canvasMax = end
                     viewTop = 0
                     topHeader = top
+                    bottomFrame = first
                 }
                 viewTop += shift
 
@@ -289,6 +293,7 @@ final class CoreStitcher {
                         pieces.append((viewTop + start, image))
                     }
                     canvasMax = viewTop + end
+                    bottomFrame = cur
                 }
                 // Nouveau contenu en haut : on reprend aussi l'en-tête, qui remonte au sommet de la toile.
                 if viewTop + top < canvasMin + topHeader {
@@ -321,8 +326,9 @@ final class CoreStitcher {
         guard scrolled else {
             return Self.image(from: reference.raw, rows: 0..<reference.height)
         }
+        let bottom = bottomFrame ?? reference
         let footerImage = footer > 0
-            ? Self.image(from: reference.raw, rows: (reference.height - footer)..<reference.height) : nil
+            ? Self.image(from: bottom.raw, rows: (bottom.height - footer)..<bottom.height) : nil
         guard let full = render(from: canvasMin, to: canvasMax, footer: footerImage,
                                 width: reference.width, scale: 1) else { return nil }
         let keep = keptColumns

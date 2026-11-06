@@ -192,6 +192,7 @@ enum FileUtil {
         return CGImageSourceCreateImageAtIndex(src, 0, nil)
     }
 
+    @MainActor
     static func thumbnail(for url: URL, isGIF: Bool) async -> NSImage? {
         if isGIF { return NSImage(contentsOf: url) }
         let gen = AVAssetImageGenerator(asset: AVURLAsset(url: url))
