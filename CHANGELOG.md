@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Cleaner installer: the Declic icon, large, on the left and the Applications folder on the right.
+
 ## 1.0.0
 
 First public release of Declic, a free and open-source screenshot app for macOS 14+.
