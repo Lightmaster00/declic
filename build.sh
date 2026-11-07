@@ -38,6 +38,15 @@ fi
 if [[ "${1:-}" == "setup-signing" ]]; then
     REPO="$(cat .github-repo 2>/dev/null | tr -d '[:space:]')"
     command -v gh >/dev/null || { echo "❌ Install the GitHub CLI first: brew install gh && gh auth login"; exit 1; }
+    [[ -n "$REPO" ]] || { echo "❌ Run this from the app's folder (.github-repo not found)."; exit 1; }
+    echo "This sets up signing for $IDENTITY → $REPO"
+    # A new certificate means apps already installed refuse the next update (they only accept the
+    # certificate they were signed with), so never replace one by accident.
+    if gh secret list --repo "$REPO" 2>/dev/null | grep -q '^SIGNING_CERTIFICATE' && [[ "${2:-}" != "--replace" ]]; then
+        echo "❌ $REPO already has a signing certificate. Replacing it breaks in-app updates for installed copies."
+        echo "   If you really want a new certificate: ./build.sh setup-signing --replace"
+        exit 1
+    fi
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
     password=$("$OPENSSL" rand -hex 24)
