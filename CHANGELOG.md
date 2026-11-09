@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- Menu bar icon redrawn to match the other Lightmaster apps (Relief, Overdrive): same stroke weight and size, same spacing in the menu bar.
+
 ## 1.1.0
 
 - New: **Capture Previous Area** (⌥⇧P, also in the menu) captures the last selected area

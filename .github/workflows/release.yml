@@ -88,9 +88,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # The notes are this version's section of CHANGELOG.md, which the update window shows.
+          awk -v v="## $VERSION" '$0==v{on=1;next} /^## /{if(on)exit} on' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "Declic $VERSION" > notes.md
           gh release create "v$VERSION" build/Declic.dmg build/Declic.zip \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Declic $VERSION" --generate-notes
+            --title "Declic $VERSION" --notes-file notes.md
 
       - name: Clean up the keychain
         if: always()
