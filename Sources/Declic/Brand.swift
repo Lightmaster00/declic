@@ -16,37 +16,31 @@ enum Brand {
     static let gradient = LinearGradient(colors: [apricot, coral, raspberry],
                                          startPoint: .topLeading, endPoint: .bottomTrailing)
 
-    /// Menu bar icon: the viewfinder, as a template image
-    /// (macOS tints it black or white depending on the appearance).
+    /// Menu bar icon (template image): the viewfinder corners of the app icon.
+    /// Same grammar as the other Lightmaster apps: 1.6 pt round strokes in a 14 pt box, no fills.
     static func menuBarIcon() -> NSImage {
-        let size = NSSize(width: 18, height: 18)
-        let image = NSImage(size: size, flipped: false) { rect in
-            NSColor.black.setStroke()
-            let inset: CGFloat = 2.5
-            let r = rect.insetBy(dx: inset, dy: inset)
-            let arm: CGFloat = 4.6
-            let radius: CGFloat = 2.2
-            let corners = NSBezierPath()
-            corners.lineWidth = 1.7
-            corners.lineCapStyle = .round
-            corners.lineJoinStyle = .round
-            // Bottom left, bottom right, top right, top left (unflipped coordinates).
-            func corner(_ origin: NSPoint, _ dx: CGFloat, _ dy: CGFloat) {
-                corners.move(to: NSPoint(x: origin.x, y: origin.y + dy * arm))
-                corners.line(to: NSPoint(x: origin.x, y: origin.y + dy * radius))
-                corners.curve(to: NSPoint(x: origin.x + dx * radius, y: origin.y),
-                              controlPoint1: origin, controlPoint2: origin)
-                corners.line(to: NSPoint(x: origin.x + dx * arm, y: origin.y))
+        let image = NSImage(size: NSSize(width: 18, height: 18), flipped: true) { _ in
+            let path = NSBezierPath()
+            path.lineWidth = 1.6
+            path.lineCapStyle = .round
+            path.lineJoinStyle = .round
+            let arm: CGFloat = 4.4, radius: CGFloat = 2.4
+            func corner(_ x: CGFloat, _ y: CGFloat, _ dx: CGFloat, _ dy: CGFloat) {
+                path.move(to: NSPoint(x: x, y: y + dy * arm))
+                path.line(to: NSPoint(x: x, y: y + dy * radius))
+                path.curve(to: NSPoint(x: x + dx * radius, y: y), controlPoint1: NSPoint(x: x, y: y), controlPoint2: NSPoint(x: x, y: y))
+                path.line(to: NSPoint(x: x + dx * arm, y: y))
             }
-            corner(NSPoint(x: r.minX, y: r.minY), 1, 1)
-            corner(NSPoint(x: r.maxX, y: r.minY), -1, 1)
-            corner(NSPoint(x: r.maxX, y: r.maxY), -1, -1)
-            corner(NSPoint(x: r.minX, y: r.maxY), 1, -1)
-            corners.stroke()
-
+            corner(2.3, 2.3, 1, 1)
+            corner(15.7, 2.3, -1, 1)
+            corner(15.7, 15.7, -1, -1)
+            corner(2.3, 15.7, 1, -1)
+            NSColor.black.setStroke()
+            path.stroke()
             return true
         }
         image.isTemplate = true
+        image.accessibilityDescription = "Declic"
         return image
     }
 }
